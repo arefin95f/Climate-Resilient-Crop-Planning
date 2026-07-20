@@ -1,164 +1,62 @@
-# AgriSight: A Geospatial Framework for Climate-Resilient Crop Planning in Bangladesh
+# 🌾 AgriSight-BD  
+**A Geospatial ML Framework for Climate-Resilient Crop Planning in Bangladesh**
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://agrisight-bd.streamlit.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
+---
 
-**AgriSight-BD** predicts district-level Boro rice yield and recommends climate-resilient crop strategies using live data from NASA POWER, ISRIC SoilGrids, Google Earth Engine (MODIS NDVI), and BBS agricultural statistics.
+## 🚀 Live Demo
 
+**👉 [Try AgriSight-BD Now](https://agrisight-bd.streamlit.app)**
 
+*Interactive Prediction Playground • What-If Scenarios • Crop Suitability Maps*
 
-## Features
+---
 
+## 📖 Overview
 
+**AgriSight-BD** predicts district-level **Boro rice yield** and recommends climate-resilient crop strategies by integrating real-world data from:
 
-| Phase | Deliverable |
+| Data Source | Type | Provider |
+|-------------|------|----------|
+| 🌦️ Climate | Temperature, rainfall, humidity, solar radiation | [NASA POWER](https://power.larc.nasa.gov/) |
+| 🌍 Soil | pH, organic carbon, nitrogen, clay, sand | [ISRIC SoilGrids](https://soilgrids.org/) |
+| 🛰️ Vegetation | MODIS NDVI (vegetation health index) | [Google Earth Engine](https://earthengine.google.com/) |
+| 📊 Crop Yield | District-level Boro, Aman, Maize statistics | [Bangladesh Bureau of Statistics](https://bbs.gov.bd/) |
 
-|-------|-------------|
+---
 
-| **Phase 1** | Data pipeline — NASA POWER + ISRIC + GEE NDVI + BBS yield merge |
+## 🎯 Key Features
 
-| **Phase 2** | EDA (correlation heatmaps, choropleth maps, time-series decomposition), ML comparison (Linear Regression, Random Forest, XGBoost) with TimeSeriesSplit CV, SHAP explainability |
+| Phase | Deliverable | Status |
+|-------|-------------|--------|
+| **Phase 1 – Data Engineering** | Automated pipeline: NASA POWER + ISRIC + GEE NDVI + BBS yield merge | ✅ Complete |
+| **Phase 2 – Analysis & Modeling** | EDA (correlation heatmaps, choropleth maps, time-series decomposition), ML comparison (Linear Regression, Random Forest, **XGBoost**) with TimeSeriesSplit CV, **SHAP explainability** | ✅ Complete |
+| **Phase 3 – Production** | Streamlit web app with Prediction Playground, What-If Scenarios, and Crop Suitability Map | ✅ Live |
 
-| **Phase 3** | Streamlit web app — Prediction Playground, What-If scenarios, Crop Suitability Map |
+---
 
+## 🧠 Models & Methodology
 
+Three regression models compared using **TimeSeriesSplit** cross-validation (respects temporal ordering to prevent data leakage):
 
-## Quick Start
+| Model | Role | Performance |
+|-------|------|-------------|
+| **Linear Regression** | Baseline | — |
+| **Random Forest** | Tabular data workhorse | Improved |
+| **XGBoost** | State-of-the-art gradient boosting | 🏆 Best |
 
+**Evaluation Metrics:** RMSE (Root Mean Square Error) and MAE (Mean Absolute Error)
 
+**Explainability:** SHAP (SHapley Additive exPlanations) reveals *which features drive predictions* — critical insight for agricultural decision-makers.
 
+---
+
+## ⚡ Quick Start
+
+### 1. Clone the Repository
 ```bash
-
-# 1. Create virtual environment
-
-python -m venv .venv
-
-.venv\Scripts\activate        # Windows
-
-# source .venv/bin/activate   # Linux/Mac
-
-
-
-# 2. Install dependencies
-
-pip install -r requirements.txt
-
-
-
-# 3. Authenticate Google Earth Engine (one-time)
-
-python scripts/authenticate_gee.py
-
-# Must: set your Cloud project ID (required for newer GEE accounts)
-
-
-# 5. Launch web app
-
-.\.venv\Scripts\python -m streamlit run streamlit_app.py
-
-```
-
-
-
-## Project Structure
-
-
-
-```
-
-AgriSight-BD/
-
-├── data/
-
-│   ├── raw/                  # Districts, BBS yield, API caches
-
-│   └── processed/            # merged_dataset.csv, model artifacts
-
-├── reports/figures/          # EDA and SHAP plots
-
-├── scripts/                  # Utility scripts
-
-├── src/
-
-│   ├── config.py             # Central configuration
-
-│   ├── data/                 # Data pipeline modules
-
-│   │   ├── bbs_loader.py     # BBS yield loading
-
-│   │   ├── nasa_power.py     # NASA POWER API
-
-│   │   ├── soilgrids.py      # ISRIC SoilGrids API
-
-│   │   ├── ndvi.py           # MODIS NDVI via GEE
-
-│   │   └── pipeline.py       # Merge & clean
-
-│   ├── analysis/
-
-│   │   ├── eda.py            # Exploratory analysis
-
-│   │   └── shap_analysis.py  # SHAP explainability
-
-│   ├── models/
-
-│   │   └── train.py          # ML training & CV
-
-│   └── app/
-
-│       └── streamlit_app.py  # Web application UI
-
-├── streamlit_app.py          # Streamlit Cloud entry point
-
-├── run_pipeline.py           # End-to-end runner
-
-└── requirements.txt
-
-```
-
-
-
-## Data Sources
-
-
-
-| Source | Data | Module |
-
-|--------|------|--------|
-
-| [BBS Yearbook](https://bbs.gov.bd/) | Crop yield (Boro, Aman, Maize) | `bbs_loader.py` |
-
-| [NASA POWER](https://power.larc.nasa.gov/) | Temperature, rainfall, humidity, solar | `nasa_power.py` |
-
-| [ISRIC SoilGrids](https://soilgrids.org/) | pH, SOC, nitrogen, clay, sand | `soilgrids.py` |
-
-| [Google Earth Engine](https://earthengine.google.com/) | MODIS NDVI vegetation health | `ndvi.py` |
-
-
-
-## Models
-
-
-
-Three models compared with **TimeSeriesSplit** cross-validation (respects temporal order):
-
-
-
-- **Linear Regression** — baseline
-
-- **Random Forest** — tabular workhorse
-
-- **XGBoost** — typically best performer
-
-
-
-Metrics: RMSE and MAE. Best model saved with SHAP feature importance analysis.
-
-
-
-## License
-
-
-
-MIT — for academic and research use.
-
-
+git clone https://github.com/arefin95f/AgriSight-BD.git
+cd AgriSight-BD
