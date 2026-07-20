@@ -53,10 +53,3 @@ Three regression models compared using **TimeSeriesSplit** cross-validation (res
 **Explainability:** SHAP (SHapley Additive exPlanations) reveals *which features drive predictions* — critical insight for agricultural decision-makers.
 
 ---
-
-## ⚡ Quick Start
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/arefin95f/AgriSight-BD.git
-cd AgriSight-BD
