@@ -1,0 +1,46 @@
+{
+  "best_model": "XGBoost",
+  "feature_names": [
+    "temp_max_mean",
+    "temp_min_mean",
+    "rainfall_total",
+    "humidity_mean",
+    "solar_radiation_mean",
+    "rainfall_mar_jun",
+    "temp_max_mar_jun",
+    "soil_ph",
+    "soil_soc",
+    "soil_nitrogen",
+    "soil_cec",
+    "soil_clay",
+    "soil_sand",
+    "ndvi_mean",
+    "ndvi_peak",
+    "ndvi_std"
+  ],
+  "results": {
+    "Linear Regression": {
+      "rmse_mean": 0.5578,
+      "rmse_std": 0.0106,
+      "mae_mean": 0.4468,
+      "mae_std": 0.0138
+    },
+    "Random Forest": {
+      "rmse_mean": 0.3657,
+      "rmse_std": 0.0481,
+      "mae_mean": 0.2984,
+      "mae_std": 0.0353
+    },
+    "XGBoost": {
+      "rmse_mean": 0.3208,
+      "rmse_std": 0.0279,
+      "mae_mean": 0.2607,
+      "mae_std": 0.0161
+    }
+  },
+  "n_samples": 1280,
+  "year_range": [
+    2004,
+    2023
+  ]
+}
