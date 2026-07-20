@@ -1,4 +1,4 @@
-# AgriSight: A Geospatial ML Framework for Climate-Resilient Crop Planning in Bangladesh
+# AgriSight: A Geospatial Framework for Climate-Resilient Crop Planning in Bangladesh
 
 
 
