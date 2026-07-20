@@ -48,27 +48,12 @@ pip install -r requirements.txt
 
 python scripts/authenticate_gee.py
 
-# Optional: set your Cloud project ID (required for newer GEE accounts)
-
-# set GEE_PROJECT=your-gcp-project-id
-
-
-
-# 4. Run full pipeline (live APIs)
-
-python run_pipeline.py
-
-
-
-# Re-fetch all API data (ignore caches)
-
-python run_pipeline.py --refresh
-
+# Must: set your Cloud project ID (required for newer GEE accounts)
 
 
 # 5. Launch web app
 
-streamlit run streamlit_app.py
+.\.venv\Scripts\python -m streamlit run streamlit_app.py
 
 ```
 
@@ -167,38 +152,6 @@ Three models compared with **TimeSeriesSplit** cross-validation (respects tempor
 
 
 Metrics: RMSE and MAE. Best model saved with SHAP feature importance analysis.
-
-
-
-## Deploy to Streamlit Cloud
-
-
-
-1. Push this repo to GitHub
-
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-
-3. Connect repo, set main file: `streamlit_app.py`
-
-4. Add GEE credentials via Streamlit secrets if needed
-
-
-
-**Note:** Run `python run_pipeline.py` locally first and commit `data/processed/` artifacts, or let the app run the pipeline on first launch (requires network access and GEE auth).
-
-
-
-## Optional Enhancements
-
-
-
-```bash
-
-# Download district boundary GeoJSON for polygon choropleths
-
-python scripts/download_geojson.py
-
-```
 
 
 
