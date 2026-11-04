@@ -1,46 +1,50 @@
 {
+  "crop": "boro_rice",
+  "label": "Boro rice",
+  "group": "Cereal",
+  "season": "November\u2013May, grain filling March\u2013June",
+  "yield_source": "bbs",
   "best_model": "XGBoost",
   "feature_names": [
-    "temp_max_mean",
-    "temp_min_mean",
-    "rainfall_total",
-    "humidity_mean",
-    "solar_radiation_mean",
-    "rainfall_mar_jun",
-    "temp_max_mar_jun",
+    "yield_lag1",
+    "yield_lag2",
+    "yield_roll3",
+    "yield_roll5",
+    "yield_expanding",
+    "yield_slope",
+    "yield_trend",
+    "year_index",
+    "national_lag1",
+    "national_lag2",
+    "temp_max_mean_anom",
+    "temp_min_mean_anom",
+    "rainfall_total_anom",
+    "humidity_mean_anom",
+    "solar_radiation_mean_anom",
+    "rainfall_mar_jun_anom",
+    "temp_max_mar_jun_anom",
+    "ndvi_mean_anom",
+    "ndvi_peak_anom",
+    "ndvi_std_anom",
     "soil_ph",
     "soil_soc",
     "soil_nitrogen",
     "soil_cec",
     "soil_clay",
-    "soil_sand",
-    "ndvi_mean",
-    "ndvi_peak",
-    "ndvi_std"
+    "soil_sand"
   ],
   "results": {
-    "Linear Regression": {
-      "rmse_mean": 0.5578,
-      "rmse_std": 0.0106,
-      "mae_mean": 0.4468,
-      "mae_std": 0.0138
-    },
-    "Random Forest": {
-      "rmse_mean": 0.3657,
-      "rmse_std": 0.0481,
-      "mae_mean": 0.2984,
-      "mae_std": 0.0353
-    },
     "XGBoost": {
-      "rmse_mean": 0.3208,
-      "rmse_std": 0.0279,
-      "mae_mean": 0.2607,
-      "mae_std": 0.0161
+      "rmse_mean": 0.3247,
+      "rmse_std": 0.0599,
+      "mae_mean": 0.265,
+      "mae_std": 0.0491
     }
   },
-  "n_samples": 1280,
+  "n_samples": 1472,
   "year_range": [
     2004,
-    2023
-  ]
+    2026
+  ],
+  "mean_yield": 4.56
 }

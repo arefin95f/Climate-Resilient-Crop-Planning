@@ -7,8 +7,8 @@ import numpy as np
 import shap
 
 from src.analysis.eda import load_merged
-from src.config import FEATURE_COLUMNS, MODEL_DIR, REPORTS_FIGURES
-from src.models.train import prepare_features
+from src.config import MODEL_DIR, REPORTS_FIGURES
+from src.models.features import add_forecast_features
 
 
 def run_shap_analysis(max_samples: int = 500, save: bool = True) -> dict:
@@ -21,8 +21,9 @@ def run_shap_analysis(max_samples: int = 500, save: bool = True) -> dict:
     scaler = joblib.load(MODEL_DIR / "scaler.pkl")
     feature_names = joblib.load(MODEL_DIR / "feature_names.pkl")
 
-    df = load_merged()
-    X, y, _ = prepare_features(df)
+    df = add_forecast_features(load_merged())
+    X = df.reindex(columns=list(feature_names))
+    X = X.fillna(X.median(numeric_only=True)).fillna(0.0)
     X_scaled = scaler.transform(X)
 
     if len(X_scaled) > max_samples:

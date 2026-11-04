@@ -1,0 +1,50 @@
+{
+  "crop": "aman_rice",
+  "label": "Aman rice",
+  "group": "Cereal",
+  "season": "July\u2013December, grain filling July\u2013October",
+  "yield_source": "bbs",
+  "best_model": "XGBoost",
+  "feature_names": [
+    "yield_lag1",
+    "yield_lag2",
+    "yield_roll3",
+    "yield_roll5",
+    "yield_expanding",
+    "yield_slope",
+    "yield_trend",
+    "year_index",
+    "national_lag1",
+    "national_lag2",
+    "temp_max_mean_anom",
+    "temp_min_mean_anom",
+    "rainfall_total_anom",
+    "humidity_mean_anom",
+    "solar_radiation_mean_anom",
+    "rainfall_mar_jun_anom",
+    "temp_max_mar_jun_anom",
+    "ndvi_mean_anom",
+    "ndvi_peak_anom",
+    "ndvi_std_anom",
+    "soil_ph",
+    "soil_soc",
+    "soil_nitrogen",
+    "soil_cec",
+    "soil_clay",
+    "soil_sand"
+  ],
+  "results": {
+    "XGBoost": {
+      "rmse_mean": 0.3308,
+      "rmse_std": 0.0724,
+      "mae_mean": 0.2726,
+      "mae_std": 0.0671
+    }
+  },
+  "n_samples": 1472,
+  "year_range": [
+    2004,
+    2026
+  ],
+  "mean_yield": 3.264
+}

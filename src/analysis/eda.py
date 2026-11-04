@@ -9,14 +9,15 @@ import seaborn as sns
 from matplotlib.colors import Normalize
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-from src.config import CLIMATE_FEATURES, DATA_PROCESSED, DATA_RAW, FEATURE_COLUMNS, REPORTS_FIGURES, SOIL_FEATURES
+from src.config import CLIMATE_FEATURES, DATA_RAW, FEATURE_COLUMNS, REPORTS_FIGURES, SOIL_FEATURES
 
 
 def load_merged() -> pd.DataFrame:
-    path = DATA_PROCESSED / "merged_dataset.csv"
-    if not path.exists():
-        raise FileNotFoundError("Run the data pipeline first: python -m src.data.pipeline")
-    return pd.read_csv(path)
+    """Boro modeling table stored in MySQL."""
+
+    from src.db import load_crop_frame
+
+    return load_crop_frame("boro_rice")
 
 
 def plot_correlation_heatmap(df: pd.DataFrame, save: bool = True) -> plt.Figure:
@@ -64,7 +65,9 @@ def _normalize_district_names(df: pd.DataFrame, col: str = "district") -> pd.Dat
 def _load_district_geometries() -> gpd.GeoDataFrame:
     """Load or build district point geometries for choropleth-style maps."""
     geojson_path = DATA_RAW / "bangladesh_districts.geojson"
-    districts = pd.read_csv(DATA_RAW / "districts.csv")
+    from src.db import load_districts
+
+    districts = load_districts()
 
     if geojson_path.exists():
         gdf = gpd.read_file(geojson_path)

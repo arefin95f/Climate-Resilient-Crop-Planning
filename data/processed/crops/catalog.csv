@@ -1,0 +1,18 @@
+crop,label,records,districts,start_year,end_year,mean_yield
+boro_rice,Boro rice,1472,64,2004,2026,4.56
+aman_rice,Aman rice,1472,64,2004,2026,3.26
+aus_rice,Aus rice,1472,64,2004,2026,2.52
+wheat,Wheat,1472,64,2004,2026,3.35
+maize,Maize,1472,64,2004,2026,4.95
+potato,Potato,1472,64,2004,2026,21.9
+sweet_potato,Sweet potato,1472,64,2004,2026,10.83
+jute,Jute,1472,64,2004,2026,2.51
+sugarcane,Sugarcane,1472,64,2004,2026,47.39
+mustard,Mustard,1472,64,2004,2026,1.18
+lentil,Lentil,1472,64,2004,2026,1.27
+onion,Onion,1472,64,2004,2026,11.94
+garlic,Garlic,1472,64,2004,2026,6.56
+chili,Chili,1472,64,2004,2026,1.79
+groundnut,Groundnut,1472,64,2004,2026,1.91
+sesame,Sesame,1472,64,2004,2026,0.95
+soybean,Soybean,1472,64,2004,2026,1.83
