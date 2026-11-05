@@ -27,6 +27,8 @@ EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 USERNAME_PATTERN = re.compile(r"[a-z0-9._-]{3,40}")
 DEFAULT_ADMIN_LOGIN = "admin"
 DEFAULT_ADMIN_PASSWORD = "admin123"
+DEFAULT_USER_LOGIN = "user"
+DEFAULT_USER_PASSWORD = "user1234"
 
 ROLE_LABELS = {
     "user": "User",
@@ -295,17 +297,24 @@ def create_account(
     return get_user(user_id), ""
 
 
-def ensure_default_admin(reset_password: bool = False) -> None:
-    """Keep a built-in admin who signs in as admin / admin123."""
+def _ensure_builtin(
+    login: str,
+    password: str,
+    name: str,
+    role: str,
+    organization: str,
+    reset_password: bool,
+) -> None:
+    """Create one built-in account when it is missing."""
 
     conn = _connect()
     try:
         row = conn.execute(
             "SELECT id FROM users WHERE email = ?",
-            (DEFAULT_ADMIN_LOGIN,),
+            (login,),
         ).fetchone()
         salt = secrets.token_hex(16)
-        digest = _hash_password(DEFAULT_ADMIN_PASSWORD, salt)
+        digest = _hash_password(password, salt)
         if row is None:
             conn.execute(
                 """
@@ -313,22 +322,43 @@ def ensure_default_admin(reset_password: bool = False) -> None:
                     name, email, password_hash, salt, organization,
                     role, districts, active, created_at
                 )
-                VALUES (?, ?, ?, ?, '', 'admin', '[]', 1, ?)
+                VALUES (?, ?, ?, ?, ?, ?, '[]', 1, ?)
                 """,
-                ("Admin", DEFAULT_ADMIN_LOGIN, digest, salt, _now()),
+                (name, login, digest, salt, organization, role, _now()),
             )
         elif reset_password:
             conn.execute(
                 """
                 UPDATE users
-                SET password_hash = ?, salt = ?, role = 'admin', active = 1
+                SET password_hash = ?, salt = ?, role = ?, active = 1
                 WHERE id = ?
                 """,
-                (digest, salt, int(row["id"])),
+                (digest, salt, role, int(row["id"])),
             )
         conn.commit()
     finally:
         conn.close()
+
+
+def ensure_default_admin(reset_password: bool = False) -> None:
+    """Keep the built-in admin and the built-in field user."""
+
+    _ensure_builtin(
+        DEFAULT_ADMIN_LOGIN,
+        DEFAULT_ADMIN_PASSWORD,
+        "Admin",
+        "admin",
+        "",
+        reset_password,
+    )
+    _ensure_builtin(
+        DEFAULT_USER_LOGIN,
+        DEFAULT_USER_PASSWORD,
+        "Field user",
+        "user",
+        "DAE",
+        reset_password,
+    )
 
 
 def authenticate(email: str, password: str) -> tuple:

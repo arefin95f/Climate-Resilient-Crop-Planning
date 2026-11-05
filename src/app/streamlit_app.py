@@ -3677,7 +3677,7 @@ def _render_sign_in_panel() -> None:
             """
             <div class="auth-head">
                 <h2>Sign in</h2>
-                <p>Use the email and password for an existing account.</p>
+                <p>Field user: user / user1234. Admin: admin / admin123.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -3705,6 +3705,7 @@ def _render_sign_in_panel() -> None:
             if user["role"] == "admin":
                 st.session_state.admin_console = True
             else:
+                st.session_state.admin_console = False
                 st.session_state.pending_page = "My work"
             st.rerun()
 
