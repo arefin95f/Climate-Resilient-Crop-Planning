@@ -200,8 +200,9 @@ html, body, [class*="css"] {
     min-height: 3.25rem;
     background: #F4F6F3;
     border-bottom: 1px solid #E4EBE5;
-    left: 268px !important;
-    width: calc(100% - 268px) !important;
+    left: 0 !important;
+    right: auto !important;
+    width: 100% !important;
 }
 [data-testid="stToolbar"],
 #MainMenu,
@@ -225,18 +226,46 @@ footer,
     height: 100vh !important;
     z-index: 100;
 }
+[data-testid="stAppViewContainer"] > div:has([data-testid="stMain"]) {
+    position: relative !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 268px) !important;
+}
 [data-testid="stMain"] {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
     width: auto !important;
+    height: auto !important;
+    min-height: 100%;
 }
 [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
+    align-items: flex-start !important;
 }
 [data-testid="stColumn"] {
-    flex: 1 1 180px !important;
+    flex: 1 1 260px !important;
     width: auto !important;
-    min-width: 0 !important;
+    min-width: min(100%, 240px) !important;
+    max-width: 100% !important;
+}
+[data-testid="stImage"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+}
+[data-testid="stImage"] img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
 }
 [data-testid="stSidebar"] > div:first-child {
     padding-top: 0.85rem;
