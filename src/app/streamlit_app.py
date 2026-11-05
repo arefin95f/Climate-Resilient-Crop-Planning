@@ -224,7 +224,15 @@ footer,
     min-width: 268px !important;
     max-width: 268px !important;
     height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
     z-index: 100;
+}
+[data-testid="stSidebarContent"] {
+    height: 100% !important;
+    max-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 [data-testid="stAppViewContainer"] > div:has([data-testid="stMain"]) {
     position: relative !important;
@@ -232,6 +240,10 @@ footer,
     width: auto !important;
     min-width: 0 !important;
     max-width: calc(100% - 268px) !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
 }
 [data-testid="stMain"] {
     position: relative !important;
@@ -243,8 +255,11 @@ footer,
     flex: 1 1 auto !important;
     min-width: 0 !important;
     width: auto !important;
-    height: auto !important;
-    min-height: 100%;
+    height: 100% !important;
+    max-height: 100vh !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
