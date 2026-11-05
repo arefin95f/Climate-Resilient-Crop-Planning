@@ -453,7 +453,7 @@ def read_frame(query: str, params: dict | None = None) -> pd.DataFrame:
 
 
 def _numeric_frame(frame: pd.DataFrame) -> pd.DataFrame:
-    text_columns = {"district", "division", "crop"}
+    text_columns = {"district", "division", "crop", "label"}
     for column in frame.columns:
         if column not in text_columns:
             frame[column] = pd.to_numeric(frame[column])
