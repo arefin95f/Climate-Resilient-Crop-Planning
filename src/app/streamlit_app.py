@@ -57,7 +57,7 @@ st.set_page_config(
     page_title="AgriSight-BD",
     page_icon="🌾",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 ZONE_COLORS = {
@@ -210,6 +210,7 @@ footer,
 [data-testid="stDecoration"] {
     display: none;
 }
+@media (min-width: 769px) {
 [data-testid="stSidebar"] {
     background: #FFFFFF;
     border-right: 1px solid #E4EBE5;
@@ -260,6 +261,7 @@ footer,
     min-height: 0 !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+}
 }
 [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
@@ -394,11 +396,14 @@ footer,
     box-shadow: none;
     font-weight: 600;
 }
+@media (min-width: 769px) {
 [data-testid="stSidebarHeader"],
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="collapsedControl"],
-[data-testid="stSidebarCollapseButton"] {
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stExpandSidebarButton"] {
     display: none !important;
+}
 }
 .page-head {
     padding: 4px 0 8px 0;
@@ -596,6 +601,130 @@ hr {
         font-size: 1.6rem !important;
     }
 }
+
+@media (max-width: 768px) {
+    /* Phones: let Streamlit open and close the sidebar as an overlay.
+       The desktop pinning rules above only apply at 769px and wider. */
+    [data-testid="stToolbar"] {
+        display: flex !important;
+        visibility: visible !important;
+    }
+    [data-testid="stToolbarActions"],
+    [data-testid="stMainMenu"],
+    [data-testid="stAppDeployButton"],
+    .stDeployButton {
+        display: none !important;
+    }
+    [data-testid="stSidebarHeader"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stExpandSidebarButton"] {
+        display: flex !important;
+        visibility: visible !important;
+    }
+    [data-testid="stSidebar"] {
+        z-index: 1000 !important;
+    }
+    [data-testid="stSidebarContent"] {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    /* Remove the desktop-only reserved sidebar width from the main content. */
+    [data-testid="stAppViewContainer"] > div:has([data-testid="stMain"]) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+    }
+    [data-testid="stMain"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+    }
+    .block-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 3.75rem 0.85rem 2rem !important;
+    }
+    html, body, [data-testid="stApp"] {
+        overflow-x: hidden !important;
+    }
+
+    /* Keep existing multi-column content, but allow it to wrap on narrow screens. */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+    }
+    [data-testid="stColumn"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Make existing controls easier to use with touch input. */
+    [data-testid="stMain"] button,
+    [data-testid="stSidebar"] button,
+    [data-testid="stMain"] [role="button"] {
+        min-height: 44px;
+    }
+    [data-testid="stTextInputRootElement"],
+    [data-testid="stSelectbox"] [data-baseweb="select"],
+    [data-testid="stMultiSelect"] [data-baseweb="select"] {
+        min-height: 44px;
+    }
+
+    /* Keep visualizations and tabular content within the phone viewport. */
+    [data-testid="stPlotlyChart"],
+    [data-testid="stVegaLiteChart"],
+    [data-testid="stDataFrame"],
+    [data-testid="stTable"] {
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    [data-testid="stDataFrame"],
+    [data-testid="stTable"] {
+        overflow-x: auto !important;
+    }
+    .page-head h1 {
+        font-size: 1.45rem !important;
+        overflow-wrap: anywhere;
+    }
+    .page-head p {
+        font-size: 0.94rem !important;
+    }
+    [data-testid="stForm"] {
+        padding: 0.85rem !important;
+    }
+
+    /* 16px inputs stop iPhones from zooming in when a field is tapped. */
+    input, textarea, [data-baseweb="select"] input {
+        font-size: 16px !important;
+    }
+    /* Wide pages scroll inside their own box instead of the whole page. */
+    [data-testid="stTabs"] [role="tablist"],
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        overflow-x: auto !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 1.5rem !important;
+        overflow-wrap: anywhere;
+    }
+    [data-testid="stMarkdownContainer"] table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    [data-testid="stDownloadButton"] button,
+    [data-testid="stFormSubmitButton"] button {
+        width: 100%;
+    }
+}
+
 </style>
 """
 
@@ -4305,4 +4434,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  
