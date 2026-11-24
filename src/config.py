@@ -8,6 +8,11 @@ DATA_PROCESSED = PROJECT_ROOT / "data" / "processed"
 CROP_DATA_DIR = DATA_PROCESSED / "crops"
 REPORTS_FIGURES = PROJECT_ROOT / "reports" / "figures"
 MODEL_DIR = DATA_PROCESSED / "model_artifacts"
+# The checked-in BBS yield series is reported through 2023; later rows are
+# projections created by the dataset builder, not observed harvests.
+OBSERVED_BBS_YIELD_END_YEAR = 2023
+BBS_BACKTEST_START_YEAR = 2019
+BBS_ERROR_BAND_CALIBRATION_END_YEAR = 2021
 
 # Major Bangladesh field crops. Boro, Aman, and maize keep the
 # yield records already shipped in data/raw/bbs_yield.csv.

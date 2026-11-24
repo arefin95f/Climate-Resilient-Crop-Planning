@@ -7,11 +7,25 @@ opened on this console becomes the latest year the planner uses.
 from __future__ import annotations
 
 import html
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from src.accounts import ROLE_LABELS
+from src.accounts import (
+    REVIEW_CATEGORIES,
+    ROLE_LABELS,
+    application_document_bytes,
+    assign_review_request,
+    close_review_request,
+    complete_review_request,
+    list_agronomist_applications,
+    list_review_events,
+    list_review_requests,
+    list_verified_agronomists,
+    review_agronomist_application,
+    start_review_request,
+)
 from src.config import CROP_CATALOG
 from src.year_intake import (
     apply_crop_rows,
@@ -39,12 +53,15 @@ from src.year_intake import (
 )
 
 
-OPS_PAGES = [
+ADMIN_PAGES = [
+    "Applications",
     "Operations",
     "Year intake",
     "Season results",
     "Crop files",
+    "Expert review",
 ]
+AGRONOMIST_PAGES = ["Expert review"]
 
 ADMIN_CSS = """
 <style>
@@ -154,6 +171,9 @@ ADMIN_CSS = """
 .ops-kpis {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
+.ops-kpis.review-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .ops-steps {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -188,6 +208,17 @@ ADMIN_CSS = """
     letter-spacing: -0.03em;
     line-height: 1.15;
 }
+.apply-card {
+    background: #FFFFFF;
+    border: 1px solid #D5DEE6;
+    border-radius: 14px;
+    padding: 16px 16px 12px;
+    margin: 0 0 12px 0;
+}
+.apply-card h3 {
+    margin: 0 0 4px 0 !important;
+    font-size: 1.05rem !important;
+}
 .ops-kpis em, .ops-steps p {
     display: block;
     color: #3E4E5E;
@@ -211,133 +242,170 @@ ADMIN_CSS = """
     font-size: 0.82rem;
     font-weight: 650;
 }
-@media (max-width: 900px) {
-    .ops-kpis, .ops-steps {
-        grid-template-columns: 1fr 1fr;
-    }
+.reviewer-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 0 0 16px 0;
 }
-@media (max-width: 640px) {
-    .ops-kpis, .ops-steps {
-        grid-template-columns: 1fr;
-    }
+.reviewer-row span {
+    display: block;
+    background: #FFFFFF;
+    border: 1px solid #D5DEE6;
+    border-left: 3px solid #1F3A5F;
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #14202B;
+    font-size: 0.95rem;
+    font-weight: 700;
 }
-
-/* Mobile-only layout refinements. Desktop styling above remains unchanged. */
-@media (max-width: 768px) {
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .block-container {
+.reviewer-row em {
+    display: block;
+    margin-top: 3px;
+    color: #5C6E80;
+    font-style: normal;
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+@media (max-width: 1200px), (pointer: coarse) {
+    [data-testid="stAppViewContainer"]:has(.admin-shell) {
+        overflow-x: hidden !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHeader"] {
+        display: block !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        overflow: visible !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarHeader"],
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="collapsedControl"] {
+        display: flex !important;
+        position: fixed !important;
+        top: calc(18px + env(safe-area-inset-top)) !important;
+        z-index: 5000 !important;
+        width: 32px !important;
+        height: 32px !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"][aria-expanded="true"] [data-testid="stSidebarHeader"] {
+        left: calc(min(86vw, 280px) - 44px) !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"] {
+        color: #F4F7FA !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="collapsedControl"] {
+        left: 14px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #D5DEE6 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
+        color: #14202B !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stAppDeployButton"],
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMainMenuButton"],
+    [data-testid="stAppViewContainer"]:has(.admin-shell) #MainMenu {
+        display: none !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin-left: 0 !important;
+        width: min(86vw, 280px) !important;
+        min-width: 0 !important;
+        max-width: min(86vw, 280px) !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        z-index: 1000 !important;
+        overflow: visible !important;
+        transform: none !important;
+        box-shadow: 0 16px 40px rgba(18, 24, 31, 0.28);
+        transition: left 180ms ease, visibility 180ms ease;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"][aria-expanded="false"] {
+        left: -110% !important;
+        transform: none !important;
+        visibility: hidden !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"][aria-expanded="true"] {
+        left: 0 !important;
+        transform: none !important;
+        visibility: visible !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) > div:has([data-testid="stMain"]) {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0.85rem 0.85rem 2rem !important;
     }
-
     [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMain"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) .block-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 4.2rem 0.9rem 2.2rem !important;
+    }
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stColumn"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
         min-width: 0 !important;
+        max-width: 100% !important;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMainBlockContainer"] {
-        min-width: 0 !important;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-head {
-        margin-bottom: 12px;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-head h1 {
-        font-size: clamp(1.45rem, 6vw, 1.8rem) !important;
-        overflow-wrap: anywhere;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-head p {
-        font-size: 0.94rem !important;
-    }
-
     [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHorizontalBlock"] {
         flex-wrap: wrap !important;
         gap: 0.75rem !important;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHorizontalBlock"] > [data-testid="column"] {
-        min-width: min(100%, 15rem) !important;
-    }
-
     [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stDataFrame"],
     [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stTable"],
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMarkdown"] {
-        max-width: 100%;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stDataFrame"] {
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stFileUploader"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
         overflow-x: auto !important;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) input,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) textarea,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-baseweb="select"] {
-        max-width: 100% !important;
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMain"] button {
+        white-space: normal !important;
+        height: auto !important;
+        min-height: 2.6rem;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) button,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stDownloadButton"] button {
-        min-height: 2.7rem;
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stExpander"] p,
+    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMarkdownContainer"] {
+        overflow-wrap: anywhere;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stFileUploader"] section {
-        padding: 0.8rem !important;
+    .ops-kpis, .ops-steps, .ops-kpis.review-board, .reviewer-row {
+        grid-template-columns: 1fr 1fr;
     }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-kpis,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-steps {
-        gap: 0.65rem;
+    .ops-head h1 {
+        font-size: clamp(1.45rem, 6vw, 1.8rem) !important;
+        overflow-wrap: anywhere;
     }
-}
-
-@media (max-width: 768px) {
-    /* The admin page hides Streamlit's header on desktop. On a phone the
-       header holds the button that opens the sidebar, so bring it back. */
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHeader"] {
-        display: flex !important;
-        background: #E7ECF1 !important;
-        border-bottom: 1px solid #D5DEE6 !important;
-    }
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .block-container {
-        padding-top: 3.75rem !important;
-    }
-    [data-testid="stAppViewContainer"]:has(.admin-shell) .ops-kpis strong {
-        font-size: 1.3rem;
-    }
-    [data-testid="stAppViewContainer"]:has(.admin-shell) input,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) textarea {
-        font-size: 16px !important;
+    .ops-head p,
+    .ops-kpis em,
+    .ops-pills span,
+    .reviewer-row span {
+        overflow-wrap: anywhere;
     }
 }
 @media (max-width: 640px) {
+    .ops-kpis, .ops-steps, .ops-kpis.review-board, .reviewer-row {
+        grid-template-columns: 1fr;
+    }
+    .ops-head p {
+        font-size: 0.96rem !important;
+    }
     [data-testid="stAppViewContainer"]:has(.admin-shell) .block-container {
-        padding-left: 0.7rem !important;
-        padding-right: 0.7rem !important;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHorizontalBlock"] > [data-testid="column"] {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"] {
-        min-width: 0 !important;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"] button {
-        min-height: 2.75rem;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stMetricValue"] {
-        font-size: 1.45rem !important;
-        overflow-wrap: anywhere;
-    }
-
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stDownloadButton"] button,
-    [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stFormSubmitButton"] button {
-        width: 100%;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
 }
 </style>
@@ -352,20 +420,25 @@ def _shell() -> None:
     )
 
 
-def _head(title: str, subtitle: str) -> None:
+def _head(title: str, subtitle: str = "") -> None:
+    detail = (
+        f"<p>{html.escape(subtitle)}</p>"
+        if subtitle
+        else ""
+    )
     st.markdown(
         f"""
         <header class="ops-head">
             <p class="eyebrow">Operations</p>
             <h1>{html.escape(title)}</h1>
-            <p>{html.escape(subtitle)}</p>
+            {detail}
         </header>
         """,
         unsafe_allow_html=True,
     )
 
 
-def _kpis(cards: list[tuple[str, str, str]]) -> None:
+def _kpis(cards: list[tuple[str, str, str]], *, columns: int = 0) -> None:
     cells = []
     for label, value, note in cards:
         cells.append(
@@ -375,8 +448,9 @@ def _kpis(cards: list[tuple[str, str, str]]) -> None:
             f"<em>{html.escape(note)}</em>"
             "</div>"
         )
+    board = " review-board" if columns else ""
     st.markdown(
-        f'<div class="ops-kpis">{"".join(cells)}</div>',
+        f'<div class="ops-kpis{board}">{"".join(cells)}</div>',
         unsafe_allow_html=True,
     )
 
@@ -424,15 +498,21 @@ def _sidebar(user: dict) -> str:
         """,
         unsafe_allow_html=True,
     )
-    current = st.session_state.get("ops_page", "Operations")
-    if current not in OPS_PAGES:
-        current = "Operations"
+    pages = (
+        ADMIN_PAGES
+        if user["role"] == "admin"
+        else AGRONOMIST_PAGES
+    )
+    default_page = "Operations" if user["role"] == "admin" else "Expert review"
+    current = st.session_state.get("ops_page", default_page)
+    if current not in pages:
+        current = default_page
         st.session_state.ops_page = current
     st.sidebar.markdown(
         '<div class="nav-label">Console</div>',
         unsafe_allow_html=True,
     )
-    for item in OPS_PAGES:
+    for item in pages:
         if st.sidebar.button(
             item,
             key=f"ops_nav_{item}",
@@ -458,6 +538,125 @@ def _sidebar(user: dict) -> str:
         on_click=_sign_out,
     )
     return st.session_state.get("ops_page", "Operations")
+
+
+def _stamp(value: str) -> str:
+    return (value or "")[:16].replace("T", " ") + " UTC"
+
+
+def _applications(user: dict) -> None:
+    """Accept or deny agronomist identity applications."""
+
+    _head("Agronomist applications")
+    _flash()
+    applications, error = list_agronomist_applications(user["id"])
+    if error:
+        st.error(error)
+        return
+    pending = [item for item in applications if item["status"] == "pending"]
+    approved = [item for item in applications if item["status"] == "approved"]
+    denied = [item for item in applications if item["status"] == "rejected"]
+    _kpis(
+        [
+            ("Waiting", str(len(pending)), "Need a decision"),
+            ("Accepted", str(len(approved)), "Verified agronomists"),
+            ("Denied", str(len(denied)), "Can apply again"),
+        ]
+    )
+    if not pending:
+        st.caption("No applications waiting.")
+    for item in pending:
+        with st.container(border=True):
+            st.markdown(f"**{item['full_name']}** · {item['email']}")
+            st.caption(
+                f"{item['organization']} · submitted "
+                f"{_stamp(item['submitted_at'])}"
+            )
+            st.write(item["qualifications"])
+            st.caption(
+                f"{item['document_type_label']}: {item['document_number']}"
+            )
+            if item["notes"]:
+                st.write(item["notes"])
+            payload, filename, file_error = application_document_bytes(
+                user["id"],
+                item["id"],
+            )
+            if file_error:
+                st.caption(file_error)
+            elif payload:
+                suffix = Path(filename).suffix.lower()
+                if suffix in {".jpg", ".jpeg", ".png"}:
+                    st.image(payload, caption=filename, width=280)
+                st.download_button(
+                    "Download card",
+                    data=payload,
+                    file_name=filename or f"application_{item['id']}",
+                    key=f"ops_dl_agronomist_{item['id']}",
+                )
+            note = st.text_input(
+                "Note",
+                key=f"ops_agronomist_note_{item['id']}",
+                placeholder="Required to deny",
+            )
+            accept, deny = st.columns(2)
+            if accept.button(
+                "Accept",
+                key=f"ops_accept_agronomist_{item['id']}",
+                type="primary",
+            ):
+                error = review_agronomist_application(
+                    user["id"],
+                    item["id"],
+                    "approved",
+                    note,
+                )
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state.ops_flash = (
+                        f"{item['account_name']} is now a verified agronomist."
+                    )
+                    st.rerun()
+            if deny.button(
+                "Deny",
+                key=f"ops_deny_agronomist_{item['id']}",
+            ):
+                error = review_agronomist_application(
+                    user["id"],
+                    item["id"],
+                    "rejected",
+                    note,
+                )
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state.ops_flash = "Application denied."
+                    st.rerun()
+    decided = approved + denied
+    decided.sort(key=lambda item: item["reviewed_at"] or "", reverse=True)
+    if decided:
+        st.subheader("Decisions")
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "When": _stamp(item["reviewed_at"] or item["submitted_at"]),
+                        "Name": item["account_name"],
+                        "Document": item["document_type_label"],
+                        "Decision": (
+                            "Accepted"
+                            if item["status"] == "approved"
+                            else "Denied"
+                        ),
+                        "Note": item["review_note"],
+                    }
+                    for item in decided[:12]
+                ]
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
 
 
 def _operations(_user: dict, status: dict) -> None:
@@ -1162,11 +1361,227 @@ def _registry(status: dict) -> None:
         )
 
 
-def render_admin_app(user: dict) -> None:
-    """Full-screen operations console. The field planner is a separate exit."""
+REVIEW_STATUS_LABELS = {
+    "submitted": "Submitted · awaiting assignment",
+    "assigned": "Assigned · awaiting agronomist",
+    "in_review": "In review",
+    "reviewed": "Reviewed by agronomist",
+    "closed": "Closed without review",
+}
 
+
+def _review_case(user: dict, case: dict, reviewers: list[dict]) -> None:
+    is_admin = user["role"] == "admin"
+    eligible_reviewers = [
+        person
+        for person in reviewers
+        if person["id"] != case["requester_user_id"]
+    ]
+    title = (
+        f"Case #{case['id']} · {case['crop_name']} · {case['district']} · "
+        f"{REVIEW_STATUS_LABELS.get(case['status'], case['status'])}"
+    )
+    with st.expander(title):
+        st.caption(
+            f"Submitted {case['created_at']} · "
+            f"{case['requester_name']} · {case['contact_email']}"
+        )
+        st.markdown("**Question**")
+        st.caption(
+            f"Topic: {REVIEW_CATEGORIES.get(case['category'], case['category'])}"
+        )
+        st.write(case["question"])
+        st.markdown("**Prediction context**")
+        st.write(
+            f"Estimate: {case['predicted_yield']:.2f} t/ha · "
+            f"District usual: {case['usual_yield']:.2f} t/ha"
+        )
+        st.json(case["details"])
+
+        if is_admin:
+            if case["status"] not in ("reviewed", "closed"):
+                if eligible_reviewers:
+                    reviewer_ids = [
+                        person["id"] for person in eligible_reviewers
+                    ]
+                    reviewer_labels = {
+                        person["id"]: (
+                            f"{person['name']} · "
+                            f"{person['organization'] or 'No organization'} · "
+                            f"{person['qualifications']}"
+                        )
+                        for person in eligible_reviewers
+                    }
+                    current_index = (
+                        reviewer_ids.index(case["assigned_to"])
+                        if case["assigned_to"] in reviewer_ids
+                        else 0
+                    )
+                    with st.form(f"assign_review_{case['id']}"):
+                        reviewer_id = st.selectbox(
+                            "Assign to verified agronomist",
+                            reviewer_ids,
+                            index=current_index,
+                            format_func=lambda item: reviewer_labels[item],
+                            key=f"reviewer_for_{case['id']}",
+                        )
+                        assigned = st.form_submit_button(
+                            "Assign or reassign case"
+                        )
+                    if assigned:
+                        error = assign_review_request(
+                            user["id"],
+                            case["id"],
+                            reviewer_id,
+                        )
+                        if error:
+                            st.error(error)
+                        else:
+                            st.rerun()
+                else:
+                    st.warning(
+                        "No admin-verified agronomist is available. Verify "
+                        "a qualified reviewer from Applications before assigning cases."
+                    )
+                if st.button(
+                    "Close without review",
+                    key=f"close_review_{case['id']}",
+                ):
+                    error = close_review_request(user["id"], case["id"])
+                    if error:
+                        st.error(error)
+                    else:
+                        st.rerun()
+        elif case["status"] == "assigned":
+            if st.button(
+                "Start review",
+                key=f"start_review_{case['id']}",
+                type="primary",
+            ):
+                error = start_review_request(user["id"], case["id"])
+                if error:
+                    st.error(error)
+                else:
+                    st.rerun()
+        elif case["status"] == "in_review":
+            with st.form(f"complete_review_{case['id']}"):
+                response = st.text_area(
+                    "Agronomist review and recommended next steps",
+                    max_chars=2000,
+                    key=f"review_response_{case['id']}",
+                    help=(
+                        "Explain the evidence, uncertainties, and any "
+                        "on-site checks needed."
+                    ),
+                )
+                completed = st.form_submit_button(
+                    "Submit review to requester",
+                    type="primary",
+                )
+            if completed:
+                error = complete_review_request(
+                    user["id"],
+                    case["id"],
+                    response,
+                )
+                if error:
+                    st.error(error)
+                else:
+                    st.rerun()
+
+        if case["response"]:
+            st.markdown("**Agronomist response**")
+            st.write(case["response"])
+
+        st.markdown("**Audit history**")
+        for event in list_review_events(user["id"], case["id"]):
+            change = (
+                f" · {event['from_status']} → {event['to_status']}"
+                if event["to_status"]
+                else ""
+            )
+            st.caption(
+                f"{event['created_at']} · {event['action'].replace('_', ' ').title()}"
+                f"{change} · {event['actor_name']}"
+            )
+
+
+def _status_count(requests: list[dict], status: str) -> int:
+    return sum(1 for case in requests if case["status"] == status)
+
+
+def _review_inbox(user: dict) -> None:
+    is_admin = user["role"] == "admin"
+    _head("Expert review" if is_admin else "Assigned cases")
+    if is_admin:
+        reviewers = list_verified_agronomists(user["id"])
+    else:
+        reviewers = []
+    requests = list_review_requests(user["id"])
+    submitted = _status_count(requests, "submitted")
+    assigned = _status_count(requests, "assigned")
+    in_review = _status_count(requests, "in_review")
+    reviewed = _status_count(requests, "reviewed")
+    closed = _status_count(requests, "closed")
+    if is_admin:
+        _kpis(
+            [
+                ("Open", str(submitted + assigned + in_review), "Still in the queue"),
+                ("Unassigned", str(submitted), "Waiting for a reviewer"),
+                ("With reviewer", str(assigned + in_review), "Assigned or in review"),
+                ("Reviewed", str(reviewed), "Reply sent"),
+                ("Closed", str(closed), "Closed without a reply"),
+                ("Reviewers", str(len(reviewers)), "Verified agronomists"),
+            ],
+            columns=3,
+        )
+        if reviewers:
+            cards = "".join(
+                "<span>"
+                f"{html.escape(person['name'])}"
+                f"<em>{html.escape(person['organization'] or 'Independent')}</em>"
+                "</span>"
+                for person in reviewers
+            )
+            st.markdown(
+                f'<div class="reviewer-row">{cards}</div>',
+                unsafe_allow_html=True,
+            )
+    else:
+        _kpis(
+            [
+                ("Assigned", str(assigned), "Not started"),
+                ("In review", str(in_review), "Reply in progress"),
+                ("Reviewed", str(reviewed), "Sent to the requester"),
+            ]
+        )
+    if not requests:
+        return
+    for case in requests:
+        _review_case(user, case, reviewers)
+
+
+def render_admin_app(user: dict) -> None:
+    """Render the admin console or restricted agronomist review desk."""
+
+    if user["role"] != "admin" and not (
+        user["role"] == "agronomist"
+        and user["expert_verified"]
+        and user["active"]
+    ):
+        st.error("This account is not authorized for the operations console.")
+        return
     _shell()
     page = _sidebar(user)
+    if page == "Expert review":
+        _review_inbox(user)
+        return
+    if user["role"] != "admin":
+        st.error("Agronomist accounts can only access assigned review cases.")
+        return
+    if page == "Applications":
+        _applications(user)
+        return
     status = season_status()
     if page == "Operations":
         _operations(user, status)
@@ -1177,4 +1592,4 @@ def render_admin_app(user: dict) -> None:
     elif page == "Crop files":
         _registry(status)
     else:
-        _operations(user, status)  
+        _operations(user, status)

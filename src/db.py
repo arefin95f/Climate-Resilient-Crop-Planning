@@ -590,5 +590,18 @@ def load_model_metadata(crop_id: str) -> dict:
     """Scores and feature list for one trained crop model."""
 
     if use_mysql():
-        return _mysql_model_metadata(crop_id)
+        metadata = _mysql_model_metadata(crop_id)
+        # The database stores scores, not the validation write-up.
+        # Keep that write-up from the model file when it is present.
+        try:
+            file_metadata = _file_model_metadata(crop_id)
+        except FileNotFoundError:
+            file_metadata = {}
+        for key in (
+            "validation_protocol",
+            "confidence_intervals_available",
+        ):
+            if key not in metadata and key in file_metadata:
+                metadata[key] = file_metadata[key]
+        return metadata
     return _file_model_metadata(crop_id)

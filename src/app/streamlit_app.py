@@ -15,21 +15,34 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 from src.accounts import (
+    AGRONOMIST_DOCUMENT_TYPES,
+    REVIEW_CATEGORIES,
     ROLE_LABELS,
     admin_update_user,
+    application_document_bytes,
+    assign_review_request,
     authenticate,
     change_password,
+    close_review_request,
+    complete_review_request,
     create_account,
     ensure_default_admin,
     delete_note,
     delete_run,
     get_note,
     get_user,
+    latest_agronomist_application,
+    list_agronomist_applications,
     list_notes,
+    list_user_review_requests,
     list_runs,
     list_users,
+    review_agronomist_application,
     save_note,
     save_run,
+    start_review_request,
+    submit_agronomist_application,
+    submit_review_request,
     update_profile,
     user_count,
 )
@@ -195,6 +208,18 @@ APP_CSS = """
 html, body, [class*="css"] {
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
+[data-testid="stIconMaterial"] {
+    font-family: "Material Symbols Rounded" !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24 !important;
+}
 [data-testid="stHeader"] {
     height: 3.25rem;
     min-height: 3.25rem;
@@ -210,7 +235,51 @@ footer,
 [data-testid="stDecoration"] {
     display: none;
 }
-@media (min-width: 769px) {
+[data-testid="stFileUploaderDropzoneInstructions"] span:last-child,
+[data-testid="stFileUploaderFileLimit"] {
+    display: none !important;
+}
+[data-testid="InputInstructions"] {
+    display: none !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) {
+    max-width: 720px;
+    padding: 1.15rem 1.2rem 1rem !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stFileUploaderDropzone"] {
+    min-height: 52px !important;
+    height: 52px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: #F7FAF8 !important;
+    border: 1px dashed #B7C8BB !important;
+    border-radius: 10px !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stFileUploaderDropzoneInstructions"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-align: left !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stFileUploaderDropzoneInstructions"] span:first-child {
+    color: #3E5648 !important;
+    font-size: 0.9rem !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    background: #F7FAF8 !important;
+    border: 1px solid #C9D6CC !important;
+    border-radius: 10px !important;
+    min-height: 42px !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stFormSubmitButton"] {
+    padding-top: 0.35rem !important;
+}
+[data-testid="stForm"]:has([data-testid="stFileUploader"]) [data-testid="stFormSubmitButton"] button {
+    min-width: 120px;
+}
 [data-testid="stSidebar"] {
     background: #FFFFFF;
     border-right: 1px solid #E4EBE5;
@@ -261,7 +330,6 @@ footer,
     min-height: 0 !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-}
 }
 [data-testid="stHorizontalBlock"] {
     flex-wrap: wrap !important;
@@ -396,14 +464,13 @@ footer,
     box-shadow: none;
     font-weight: 600;
 }
-@media (min-width: 769px) {
-[data-testid="stSidebarHeader"],
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapseButton"],
-[data-testid="stExpandSidebarButton"] {
-    display: none !important;
-}
+@media (min-width: 1201px) and (pointer: fine) {
+    [data-testid="stSidebarHeader"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapseButton"] {
+        display: none !important;
+    }
 }
 .page-head {
     padding: 4px 0 8px 0;
@@ -476,6 +543,282 @@ footer,
     letter-spacing: -0.03em;
     line-height: 1.2;
     margin-top: 4px;
+}
+.evidence-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    gap: 12px;
+}
+.evidence-hero div, .skill-grid div, .range-card {
+    background: #FFFFFF;
+    border: 1px solid #E4EBE5;
+    border-radius: 12px;
+}
+.evidence-hero div {
+    padding: 14px 14px 12px;
+    border-top: 3px solid #0E6B45;
+}
+.evidence-hero span, .skill-grid span, .range-card span {
+    display: block;
+    color: #6A7F73;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.evidence-hero strong {
+    display: block;
+    color: #14261C;
+    font-size: 1.55rem;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-top: 4px;
+}
+.case-card {
+    background: #FFFFFF;
+    border: 1px solid #E4EBE5;
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    margin: 0 0 16px 0;
+}
+.case-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.case-top em {
+    display: block;
+    color: #6A7F73;
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.case-top strong {
+    display: block;
+    color: #14261C;
+    font-size: 1.22rem;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    margin-top: 4px;
+}
+.case-status {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: #EEF3EF;
+    color: #3E5648;
+}
+.case-status.reviewed { background: #E5F4EC; color: #0E6B45; }
+.case-status.submitted, .case-status.assigned, .case-status.in_review {
+    background: #F4EFE3; color: #8A6A24;
+}
+.case-status.closed { background: #EEEFEF; color: #5C6A62; }
+.case-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    list-style: none;
+    margin: 16px 0 18px;
+    padding: 0;
+}
+.case-steps li {
+    position: relative;
+    text-align: center;
+    color: #8A9A90;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.case-steps li i {
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin: 0 auto 7px;
+    border-radius: 50%;
+    background: #D5E0D8;
+    position: relative;
+    z-index: 1;
+}
+.case-steps li::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: calc(-50% + 10px);
+    right: calc(50% + 10px);
+    height: 2px;
+    background: #D5E0D8;
+}
+.case-steps li:first-child::before { content: none; }
+.case-steps li.done i, .case-steps li.now i { background: #0E6B45; }
+.case-steps li.done, .case-steps li.now { color: #0E6B45; }
+.case-steps li.done::before, .case-steps li.now::before { background: #0E6B45; }
+.case-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 14px 0;
+}
+.case-facts div {
+    background: #F7FAF8;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+.case-facts span {
+    display: block;
+    color: #6A7F73;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.case-facts strong {
+    display: block;
+    color: #14261C;
+    font-size: 0.92rem;
+    font-weight: 650;
+    margin-top: 3px;
+}
+.case-block, .case-reply {
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 0 0 10px 0;
+}
+.case-block { background: #F7FAF8; }
+.case-reply {
+    background: #EAF6EF;
+    border: 1px solid #D5E8DC;
+}
+.case-block span, .case-reply span {
+    display: block;
+    color: #6A7F73;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.case-block p, .case-reply p {
+    color: #14261C;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    margin: 0;
+}
+.case-empty {
+    background: #FFFFFF;
+    border: 1px dashed #D5E0D8;
+    border-radius: 14px;
+    padding: 22px 18px;
+    color: #6A7F73;
+    text-align: center;
+}
+.case-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #FFFFFF;
+    border: 1px solid #E4EBE5;
+    border-radius: 12px;
+    margin: 0 0 14px 0;
+}
+.case-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #EEF3EF;
+}
+.case-list-row:last-child { border-bottom: 0; }
+.case-list-row strong {
+    color: #14261C;
+    font-size: 0.92rem;
+    font-weight: 650;
+}
+.case-list-row em {
+    color: #6A7F73;
+    font-style: normal;
+    font-size: 0.78rem;
+}
+@media (max-width: 700px) {
+    .case-facts { grid-template-columns: 1fr; }
+    .case-steps li span { display: none; }
+}
+.range-card {
+    padding: 12px 14px 10px;
+    margin-top: 12px;
+}
+.range-track {
+    position: relative;
+    height: 10px;
+    margin: 12px 0 8px;
+    border-radius: 99px;
+    background: #E7EEE9;
+}
+.range-fill {
+    position: absolute;
+    top: 0;
+    height: 10px;
+    border-radius: 99px;
+    background: #1B7A4E;
+}
+.range-mark {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 18px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background: #14261C;
+}
+.range-scale {
+    display: flex;
+    justify-content: space-between;
+    color: #5C7266;
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+.range-scale span {
+    display: inline;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: #5C7266;
+}
+.skill-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+.skill-grid div {
+    padding: 12px 12px 10px;
+    background: #F7FAF8;
+}
+.skill-grid strong {
+    display: block;
+    color: #14261C;
+    font-size: 1.35rem;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-top: 4px;
+}
+.skill-grid em {
+    display: block;
+    margin-top: 2px;
+    color: #5C7266;
+    font-style: normal;
+    font-size: 0.78rem;
+}
+@media (max-width: 800px) {
+    .evidence-hero, .skill-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 [data-testid="stMetric"] {
     padding: 10px 14px 4px 14px;
@@ -596,67 +939,228 @@ hr {
     border-top: 1px solid #E4EBE5;
     margin: 0.6rem 0;
 }
-@media (max-width: 960px) {
+@media (max-width: 1200px), (pointer: coarse) {
     .page-head h1 {
         font-size: 1.6rem !important;
     }
 }
-
-@media (max-width: 768px) {
-    /* Phones: let Streamlit open and close the sidebar as an overlay.
-       The desktop pinning rules above only apply at 769px and wider. */
-    [data-testid="stToolbar"] {
-        display: flex !important;
-        visibility: visible !important;
+@media (max-width: 1200px), (pointer: coarse) {
+    html, body {
+        overflow-x: hidden !important;
     }
-    [data-testid="stToolbarActions"],
-    [data-testid="stMainMenu"],
-    [data-testid="stAppDeployButton"],
-    .stDeployButton {
+    html,
+    body,
+    [data-testid="stScreencast"],
+    [data-testid="stApp"],
+    [data-testid="stAppViewContainer"] {
+        width: 100vw !important;
+        min-width: 0 !important;
+        max-width: 100vw !important;
+    }
+    [data-testid="stAppViewContainer"] {
+        overflow-x: hidden !important;
+    }
+    [data-testid="stHeader"] {
+        height: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] {
+        display: flex !important;
+        position: fixed !important;
+        top: calc(14px + env(safe-area-inset-top)) !important;
+        left: 14px !important;
+        z-index: 5000 !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #FFFFFF !important;
+        border: 1px solid #D5E0D8 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        pointer-events: auto !important;
+        overflow: hidden !important;
+    }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stAppDeployButton"],
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stToolbarActions"],
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stMainMenu"] {
         display: none !important;
     }
-    [data-testid="stSidebarHeader"],
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapseButton"],
-    [data-testid="stExpandSidebarButton"] {
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] div {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        height: auto !important;
+        flex: 0 0 auto !important;
         display: flex !important;
-        visibility: visible !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) button[data-testid="stExpandSidebarButton"] {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+    }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stToolbar"] {
+        display: none !important;
     }
     [data-testid="stSidebar"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin-left: 0 !important;
+        width: min(86vw, 280px) !important;
+        min-width: 0 !important;
+        max-width: min(86vw, 280px) !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+        transform: none !important;
+        box-shadow: 0 12px 28px rgba(20, 38, 28, 0.18);
+        transition: left 180ms ease, visibility 180ms ease;
         z-index: 1000 !important;
     }
     [data-testid="stSidebarContent"] {
+        padding-top: 0.85rem !important;
         overflow-x: hidden !important;
-        overflow-y: auto !important;
     }
-
-    /* Remove the desktop-only reserved sidebar width from the main content. */
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        left: -110% !important;
+        transform: none !important;
+        visibility: hidden !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        left: 0 !important;
+        transform: none !important;
+        visibility: visible !important;
+    }
+    [data-testid="stSidebarHeader"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        position: fixed !important;
+        top: calc(14px + env(safe-area-inset-top)) !important;
+        z-index: 5000 !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        overflow: visible !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="true"] [data-testid="stSidebarHeader"] {
+        left: calc(min(86vw, 280px) - 44px) !important;
+    }
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {
+        left: 14px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #D5E0D8 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stExpandSidebarButton"] {
+        display: flex !important;
+        position: relative !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        pointer-events: none !important;
+    }
+    [data-testid="stSidebarCollapseButton"] button,
+    [data-testid="stExpandSidebarButton"] button,
+    button[data-testid="stExpandSidebarButton"] {
+        display: flex !important;
+        position: relative !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+    [data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"],
+    [data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        clip: auto !important;
+        pointer-events: none !important;
+        font-size: 22px !important;
+        color: #163126 !important;
+    }
+    [data-testid="stAppDeployButton"],
+    [data-testid="stMainMenuButton"] {
+        display: none !important;
+    }
     [data-testid="stAppViewContainer"] > div:has([data-testid="stMain"]) {
+        flex: 1 1 100% !important;
         width: 100% !important;
         max-width: 100% !important;
-        min-width: 0 !important;
-        margin-left: 0 !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
     }
     [data-testid="stMain"] {
         width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        max-height: none !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        min-height: 0 !important;
         overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
     }
     .block-container {
-        width: 100% !important;
         max-width: 100% !important;
-        padding: 3.75rem 0.85rem 2rem !important;
+        padding: 3.8rem 1rem 2rem !important;
     }
-    html, body, [data-testid="stApp"] {
-        overflow-x: hidden !important;
-    }
-
-    /* Keep existing multi-column content, but allow it to wrap on narrow screens. */
     [data-testid="stHorizontalBlock"] {
-        flex-wrap: wrap !important;
         gap: 0.75rem !important;
     }
     [data-testid="stColumn"] {
@@ -665,24 +1169,18 @@ hr {
         min-width: 0 !important;
         max-width: 100% !important;
     }
-
-    /* Make existing controls easier to use with touch input. */
-    [data-testid="stMain"] button,
-    [data-testid="stSidebar"] button,
-    [data-testid="stMain"] [role="button"] {
-        min-height: 44px;
+    [data-testid="stMetric"] {
+        min-width: 0;
+        padding: 0.75rem 0.85rem 0.5rem;
     }
-    [data-testid="stTextInputRootElement"],
-    [data-testid="stSelectbox"] [data-baseweb="select"],
-    [data-testid="stMultiSelect"] [data-baseweb="select"] {
-        min-height: 44px;
+    [data-testid="stMetric"] [data-testid="stMetricValue"] {
+        overflow-wrap: anywhere;
     }
-
-    /* Keep visualizations and tabular content within the phone viewport. */
     [data-testid="stPlotlyChart"],
-    [data-testid="stVegaLiteChart"],
+    [data-testid="stImage"],
     [data-testid="stDataFrame"],
     [data-testid="stTable"] {
+        width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
     }
@@ -690,41 +1188,31 @@ hr {
     [data-testid="stTable"] {
         overflow-x: auto !important;
     }
+    [data-testid="stPlotlyChart"] > div,
+    [data-testid="stPlotlyChart"] .js-plotly-plot,
+    [data-testid="stPlotlyChart"] .plot-container {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    [data-testid="stForm"] {
+        padding: 0.85rem 0.8rem 0.75rem;
+    }
     .page-head h1 {
-        font-size: 1.45rem !important;
+        font-size: clamp(1.45rem, 6vw, 1.8rem) !important;
         overflow-wrap: anywhere;
     }
     .page-head p {
-        font-size: 0.94rem !important;
+        font-size: 0.96rem !important;
     }
-    [data-testid="stForm"] {
-        padding: 0.85rem !important;
+    [data-testid="stMain"] button {
+        min-height: 2.65rem;
+        white-space: normal;
     }
-
-    /* 16px inputs stop iPhones from zooming in when a field is tapped. */
-    input, textarea, [data-baseweb="select"] input {
-        font-size: 16px !important;
-    }
-    /* Wide pages scroll inside their own box instead of the whole page. */
-    [data-testid="stTabs"] [role="tablist"],
-    [data-testid="stTabs"] [data-baseweb="tab-list"] {
-        overflow-x: auto !important;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 1.5rem !important;
-        overflow-wrap: anywhere;
-    }
-    [data-testid="stMarkdownContainer"] table {
-        display: block;
+    pre, code {
         max-width: 100%;
         overflow-x: auto;
     }
-    [data-testid="stDownloadButton"] button,
-    [data-testid="stFormSubmitButton"] button {
-        width: 100%;
-    }
 }
-
 </style>
 """
 
@@ -944,6 +1432,17 @@ def get_district_features(
         return district_data.iloc[-1]
 
     return district_data.mean()
+
+
+def _model_training_rows(merged: pd.DataFrame, metadata: dict) -> pd.DataFrame:
+    """Keep projected BBS yield labels out of model inputs and baselines."""
+
+    if metadata.get("yield_source") != "bbs":
+        return merged
+    year_range = metadata.get("year_range")
+    if not year_range or len(year_range) < 2:
+        raise ValueError("BBS model metadata must include its training years.")
+    return merged[merged["year"] <= int(year_range[1])]
 
 
 def predict_yield(
@@ -1327,8 +1826,9 @@ def attention_table(merged, model, scaler, features) -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def cached_attention(crop_id: str) -> pd.DataFrame:
-    merged, _districts, _metadata = load_data(crop_id)
+    merged, _districts, metadata = load_data(crop_id)
     model, scaler, features = load_model(crop_id)
+    merged = _model_training_rows(merged, metadata)
     return attention_table(merged, model, scaler, features)
 
 
@@ -1338,8 +1838,9 @@ def crop_fit_table() -> pd.DataFrame:
 
     rows = []
     for crop_id, spec in CROP_CATALOG.items():
-        merged, _districts, _metadata = load_data(crop_id)
+        merged, _districts, metadata = load_data(crop_id)
         model, scaler, features = load_model(crop_id)
+        merged = _model_training_rows(merged, metadata)
         latest = _latest_rows(merged)
         usual = merged.groupby("district")["yield_ton_ha"].mean()
         estimate = pd.Series(
@@ -1387,8 +1888,9 @@ def outlook_frame() -> pd.DataFrame:
     rows = []
     stress_labels = [label for label, _effect, _note in OUTLOOK_STRESSES]
     for crop_id, spec in CROP_CATALOG.items():
-        merged, _districts, _metadata = load_data(crop_id)
+        merged, _districts, metadata = load_data(crop_id)
         model, scaler, features = load_model(crop_id)
+        merged = _model_training_rows(merged, metadata)
         latest = _latest_rows(merged)
         usual = merged.groupby("district")["yield_ton_ha"].mean()
         estimate = pd.Series(
@@ -1762,6 +2264,8 @@ def render_dashboard(
     merged: pd.DataFrame,
     districts: pd.DataFrame,
     crop_name: str,
+    crop_id: str,
+    metadata: dict,
 ) -> None:
     """Render the AgriSight-BD landing dashboard."""
 
@@ -1772,10 +2276,11 @@ def render_dashboard(
         "sidebar, then open a tool below.",
     )
     account = signed_in_user()
+    _flash()
     if account is None:
         st.caption(
-            "Guest access is open. Sign in to save the districts "
-            "you cover, visit notes, and scenario runs."
+            "The planner is open without an account. Sign in only to "
+            "save the districts you cover, visit notes, and scenario runs."
         )
     else:
         covered = len(account["districts"])
@@ -1936,13 +2441,45 @@ def render_dashboard(
             st.markdown(
                 """
                 - A one-district briefing you can download
+                - A 90% prediction interval with holdout MAE and RMSE
+                - Expert review for yield, pest, pesticide, or fertilizer
                 - A year plan of rabi, kharif, and year-round crops
                 - A season watch for rainfall and greenness
                 - A 2030 stress test: warmer, drier, or wetter
-                - Drought, flood, and heatwave comparisons
-                - A country map of suitability zones
                 """
             )
+
+    with st.container(border=True):
+        render_model_evidence(metadata, None)
+    st.subheader("Expert review")
+    st.write(
+        "Send a yield, pest, pesticide, or fertilizer question to a "
+        "verified agronomist."
+    )
+    review_district = st.selectbox(
+        "District for an expert review",
+        sorted(districts["district"].astype(str).unique()),
+        key=f"dash_review_district_{crop_id}",
+    )
+    review_rows = _model_training_rows(merged, metadata)
+    review_history = review_rows[review_rows["district"] == review_district]
+    review_usual = float(review_history["yield_ton_ha"].mean())
+    if review_history.empty or not math.isfinite(review_usual):
+        st.caption("This district has no harvest history to attach to a review.")
+    else:
+        st.caption(
+            "This request carries the district's usual harvest. "
+            "Open Prediction Playground to attach a slider estimate."
+        )
+        render_expert_review(
+            crop_id=crop_id,
+            crop_name=crop_name,
+            district=review_district,
+            predicted_yield=review_usual,
+            usual_yield=review_usual,
+            details={"context": "Planning overview, usual harvest"},
+            surface="dashboard",
+        )
 
 
 def _slider_bounds(
@@ -1970,13 +2507,13 @@ def tab_prediction_playground(
     features,
     crop_id: str,
     crop_name: str,
+    metadata: dict,
 ):
     page_header(
         f"Prediction Playground · {crop_name}",
         "Choose a district. The estimate uses that district’s "
         "latest year, then follows the sliders.",
     )
-
     result_slot = st.container()
     col1, col2 = st.columns([1, 2], gap="large")
 
@@ -1988,28 +2525,29 @@ def tab_prediction_playground(
                 key=f"predict_district_{crop_id}",
             )
 
-            base = get_district_features(merged, district)
+            model_rows = _model_training_rows(merged, metadata)
+            base = get_district_features(model_rows, district)
 
             rain_min, rain_max = _slider_bounds(
-                merged["rainfall_total"],
+                model_rows["rainfall_total"],
                 pad_low=20,
                 pad_high=40,
                 step=5.0,
             )
             tmin_min, tmin_max = _slider_bounds(
-                merged["temp_min_mean"],
+                model_rows["temp_min_mean"],
                 pad_low=2,
                 pad_high=2,
                 step=0.5,
             )
             tmax_min, tmax_max = _slider_bounds(
-                merged["temp_max_mean"],
+                model_rows["temp_max_mean"],
                 pad_low=2,
                 pad_high=4,
                 step=0.5,
             )
             ndvi_min, ndvi_max = _slider_bounds(
-                merged["ndvi_peak"],
+                model_rows["ndvi_peak"],
                 pad_low=0.05,
                 pad_high=0.05,
                 step=0.01,
@@ -2117,8 +2655,9 @@ def tab_prediction_playground(
             base,
             overrides,
         )
-        historical_average = merged[
-            merged["district"] == district
+        model_rows = _model_training_rows(merged, metadata)
+        historical_average = model_rows[
+            model_rows["district"] == district
         ]["yield_ton_ha"].mean()
         difference = prediction - historical_average
         offer_save_run(
@@ -2154,8 +2693,8 @@ def tab_prediction_playground(
         )
 
     with col2:
-        historical = merged[
-            merged["district"] == district
+        historical = model_rows[
+            model_rows["district"] == district
         ].sort_values("year")
 
         figure = px.line(
@@ -2197,7 +2736,286 @@ def tab_prediction_playground(
             use_container_width=True,
         )
 
+    with st.container(border=True):
+        render_model_evidence(metadata, prediction)
+        render_expert_review(
+            crop_id=crop_id,
+            crop_name=crop_name,
+            district=district,
+            predicted_yield=float(prediction),
+            usual_yield=float(historical_average),
+            details={
+                "rainfall_mm": round(float(rainfall), 1),
+                "temp_min_c": round(float(temp_min), 1),
+                "temp_max_c": round(float(temp_max), 1),
+                "ndvi": round(float(ndvi), 2),
+            },
+            surface="playground",
+        )
 
+
+def model_evidence_lines(
+    metadata: dict,
+    prediction: float | None,
+) -> dict:
+    """Confidence and validation text for one crop model."""
+
+    results = (
+        metadata.get("results", {}).get(metadata.get("best_model"), {})
+        or {}
+    )
+    protocol = metadata.get("validation_protocol") or {}
+    band = results.get("empirical_error_band")
+    lines = {
+        "confidence_title": "",
+        "confidence_body": "",
+        "validation_body": "",
+        "method_body": "",
+    }
+    if band and prediction is not None:
+        half_width = float(band["half_width_t_ha"])
+        lower = max(0.0, float(prediction) - half_width)
+        upper = float(prediction) + half_width
+        eval_years = band["evaluation_years"]
+        lines["confidence_title"] = (
+            f"Empirical 90% interval: {lower:.2f}–{upper:.2f} t/ha"
+        )
+        lines["confidence_body"] = (
+            f"Holdout coverage {float(band['evaluation_coverage']):.0%} "
+            f"on {min(eval_years)}–{max(eval_years)}. "
+            "XGBoost returns one number, not a probability. "
+            "The interval is the 90th percentile of absolute errors "
+            "from earlier held-out years."
+        )
+    elif band:
+        half_width = float(band["half_width_t_ha"])
+        lines["confidence_title"] = (
+            f"Empirical 90% half-width: ±{half_width:.2f} t/ha"
+        )
+        lines["confidence_body"] = (
+            "The interval is drawn around a district estimate on "
+            "Prediction Playground, What-If, and District Profile. "
+            "XGBoost returns one number; this band comes from backtest error."
+        )
+    else:
+        lines["confidence_title"] = "Confidence score: not available"
+        lines["confidence_body"] = (
+            "This prediction is a single tonnes-per-hectare figure. "
+            "There is no probability, interval, or confidence score."
+        )
+
+    mae = results.get("mae_mean")
+    rmse = results.get("rmse_mean")
+    method = protocol.get("method", "held-out backtest")
+    score = ""
+    if mae is not None and rmse is not None:
+        score = f" MAE {float(mae):.2f} t/ha, RMSE {float(rmse):.2f} t/ha."
+    evaluation = (band or {}).get("evaluation_years") or []
+    if evaluation:
+        lines["validation_body"] = (
+            f"Checked on held-out district-years "
+            f"{min(evaluation)}–{max(evaluation)}. "
+            f"Method: {method}.{score}"
+        )
+    else:
+        year_end = (metadata.get("year_range") or [None, None])[1]
+        lines["validation_body"] = (
+            f"Checked on held-out district-years through {year_end}. "
+            f"Method: {method}.{score}"
+        )
+    calibration = (band or {}).get("calibration_years") or []
+    if calibration and evaluation:
+        same_span = (
+            min(calibration) == min(evaluation)
+            and max(calibration) == max(evaluation)
+        )
+        if same_span:
+            lines["method_body"] = (
+                "The 90% interval is the 90th percentile of absolute "
+                f"error on every held-out district-year from "
+                f"{min(evaluation)} through {max(evaluation)}. "
+                "Coverage is the share of those cases inside the interval."
+            )
+        else:
+            lines["method_body"] = (
+                "How the interval is made: measure absolute error on "
+                f"{min(calibration)}–{max(calibration)}, take the 90th "
+                "percentile as the half-width, then check how often "
+                f"{min(evaluation)}–{max(evaluation)} errors stay inside it."
+            )
+    else:
+        lines["method_body"] = (
+            "A confidence interval needs a later-year holdout and an "
+            "error band checked on years the model did not fit."
+        )
+    return lines
+
+
+def _range_bar(lower: float, upper: float, prediction: float) -> str:
+    """Interval track with the point estimate marked inside it."""
+
+    span = max(upper - lower, 0.01)
+    pad = span * 0.22
+    scale_low = lower - pad
+    scale_high = upper + pad
+    width = scale_high - scale_low
+
+    def at(value: float) -> float:
+        return max(0.0, min(100.0, (value - scale_low) / width * 100))
+
+    fill_left = at(lower)
+    fill_width = max(at(upper) - fill_left, 1.0)
+    return (
+        "<div class=\"range-card\">"
+        "<div class=\"range-track\">"
+        f"<div class=\"range-fill\" style=\"left:{fill_left:.2f}%;"
+        f"width:{fill_width:.2f}%;\"></div>"
+        f"<div class=\"range-mark\" style=\"left:{at(prediction):.2f}%;\"></div>"
+        "</div>"
+        "<div class=\"range-scale\">"
+        f"<span>{lower:.2f}</span><span>{upper:.2f}</span>"
+        "</div></div>"
+    )
+
+
+def render_model_evidence(
+    metadata: dict,
+    prediction: float | None = None,
+) -> None:
+    """Show the yield interval and holdout skill as figures, not a paragraph."""
+
+    facts = model_evidence_lines(metadata, prediction)
+    st.subheader("Confidence and validation")
+    results = (
+        metadata.get("results", {}).get(metadata.get("best_model"), {})
+        or {}
+    )
+    band = results.get("empirical_error_band")
+    if not band:
+        st.info("Prediction interval unavailable for this crop.")
+        return
+
+    half_width = float(band["half_width_t_ha"])
+    evaluation = band.get("evaluation_years") or []
+    year_label = (
+        f"{min(evaluation)}–{max(evaluation)}"
+        if evaluation
+        else "held-out years"
+    )
+    coverage = float(band.get("evaluation_coverage") or 0)
+    mae = results.get("mae_mean")
+    rmse = results.get("rmse_mean")
+    bias = results.get("bias_mean")
+
+    def figure(value, digits: int = 2, signed: bool = False) -> str:
+        if value is None:
+            return "—"
+        number = float(value)
+        if signed:
+            return f"{number:+.{digits}f}"
+        return f"{number:.{digits}f}"
+
+    if prediction is None:
+        hero = (
+            "<div class=\"evidence-hero\">"
+            "<div><span>90% prediction interval</span>"
+            f"<strong>±{half_width:.2f} t/ha</strong></div>"
+            "</div>"
+        )
+        scale = ""
+    else:
+        lower = max(0.0, float(prediction) - half_width)
+        upper = float(prediction) + half_width
+        hero = (
+            "<div class=\"evidence-hero\">"
+            "<div><span>Predicted yield</span>"
+            f"<strong>{float(prediction):.2f} t/ha</strong></div>"
+            "<div><span>90% prediction interval</span>"
+            f"<strong>{lower:.2f}–{upper:.2f}</strong></div>"
+            "</div>"
+        )
+        scale = _range_bar(lower, upper, float(prediction))
+
+    skills = (
+        "<div class=\"skill-grid\">"
+        f"<div><span>MAE</span><strong>{figure(mae)}</strong>"
+        "<em>t/ha</em></div>"
+        f"<div><span>RMSE</span><strong>{figure(rmse)}</strong>"
+        "<em>t/ha</em></div>"
+        f"<div><span>Bias</span><strong>{figure(bias, signed=True)}</strong>"
+        "<em>t/ha</em></div>"
+        f"<div><span>Coverage</span><strong>{coverage:.0%}</strong>"
+        f"<em>{year_label}</em></div>"
+        "</div>"
+    )
+    st.markdown(hero + scale + skills, unsafe_allow_html=True)
+    with st.expander("How this was checked"):
+        st.write(facts["method_body"])
+
+
+def render_expert_review(
+    crop_id: str,
+    crop_name: str,
+    district: str,
+    predicted_yield: float,
+    usual_yield: float,
+    details: dict,
+    surface: str,
+) -> None:
+    """Ask a verified agronomist to review a pesticide, fertilizer, or yield question."""
+
+    if surface != "dashboard":
+        st.subheader("Request an expert review")
+        st.write(
+            "Ask a verified agronomist about this estimate, including "
+            "pest, pesticide, or fertilizer questions."
+        )
+    reviewer = signed_in_user()
+    if reviewer is None:
+        if st.button(
+            "Sign in to request review",
+            key=f"signin_for_review_{surface}_{crop_id}",
+        ):
+            st.session_state.page = "Sign in"
+            st.session_state.admin_console = False
+            st.rerun()
+        return
+    with st.form(f"expert_review_form_{surface}_{crop_id}"):
+        category = st.selectbox(
+            "Review topic",
+            list(REVIEW_CATEGORIES),
+            format_func=lambda value: REVIEW_CATEGORIES[value],
+            key=f"expert_review_category_{surface}_{crop_id}",
+        )
+        question = st.text_area(
+            "What should the agronomist review?",
+            key=f"expert_review_question_{surface}_{crop_id}",
+            max_chars=2000,
+            placeholder=(
+                "Example: should this estimate change the fertilizer rate, "
+                "or is a pesticide warranted?"
+            ),
+        )
+        submitted = st.form_submit_button("Submit review case")
+    if submitted:
+        request_id, error = submit_review_request(
+            requester_id=reviewer["id"],
+            crop_id=crop_id,
+            crop_name=crop_name,
+            district=district,
+            category=category,
+            predicted_yield=float(predicted_yield),
+            usual_yield=float(usual_yield),
+            details=details,
+            question=question,
+        )
+        if error:
+            st.error(error)
+        else:
+            st.success(
+                f"Case #{request_id} submitted. Track its status "
+                "and read the agronomist's response under My work."
+            )
 def tab_what_if(
     merged,
     districts,
@@ -2207,13 +3025,13 @@ def tab_what_if(
     crop_id: str,
     crop_name: str,
     season: str,
+    metadata: dict,
 ):
     page_header(
         f"What-If Analysis · {crop_name}",
         f"Compare a climate shock with the usual {crop_name} "
         f"harvest. The critical season is {season}.",
     )
-
     scenario_names = list(SCENARIO_NOTES)
 
     pick1, pick2 = st.columns(2)
@@ -2229,13 +3047,14 @@ def tab_what_if(
     )
     st.caption(SCENARIO_NOTES[scenario])
 
+    model_rows = _model_training_rows(merged, metadata)
     base = get_district_features(
-        merged,
+        model_rows,
         district,
     )
 
-    historical_average = merged[
-        merged["district"] == district
+    historical_average = model_rows[
+        model_rows["district"] == district
     ]["yield_ton_ha"].mean()
 
     overrides = scenario_overrides(base, scenario)
@@ -2346,6 +3165,21 @@ def tab_what_if(
         "you picked: green when it is at or above the usual "
         "harvest, red when it falls short."
     )
+    with st.container(border=True):
+        render_model_evidence(metadata, scenario_prediction)
+        render_expert_review(
+            crop_id=crop_id,
+            crop_name=crop_name,
+            district=district,
+            predicted_yield=float(scenario_prediction),
+            usual_yield=float(historical_average),
+            details={
+                "scenario": scenario,
+                "baseline_yield": round(float(baseline_prediction), 2),
+                "change_percent": round(float(change_percentage), 1),
+            },
+            surface="what_if",
+        )
 
 
 def tab_crop_suitability(
@@ -2360,7 +3194,6 @@ def tab_crop_suitability(
         f"climate. Labels follow historical {crop_name} yield. "
         "The map opens on the whole country.",
     )
-
     n_clusters = st.slider(
         "Number of zones",
         3,
@@ -2641,7 +3474,6 @@ def tab_district_profile(
         "The estimate matches What-If with no climate shock. "
         "The zone matches the suitability map at 4 zones.",
     )
-
     picker, download_slot = st.columns([2, 1], gap="medium")
     district = picker.selectbox(
         "District",
@@ -2649,8 +3481,9 @@ def tab_district_profile(
         key=f"profile_district_{crop_id}",
     )
 
+    model_rows = _model_training_rows(merged, metadata)
     history = (
-        merged[merged["district"] == district]
+        model_rows[model_rows["district"] == district]
         .sort_values("year")
     )
     latest = history.iloc[-1]
@@ -2665,7 +3498,7 @@ def tab_district_profile(
     difference = estimate - usual
     year = int(latest["year"])
 
-    zones, overall_yield = assign_zones(merged, districts, 4)
+    zones, overall_yield = assign_zones(model_rows, districts, 4)
     place = zones[zones["district"] == district].iloc[0]
     zone_name = place["zone_name"]
     zone_mean = float(
@@ -2719,6 +3552,7 @@ def tab_district_profile(
     else:
         risk_call = "None of these shocks lowers the estimate."
 
+    profile_facts = model_evidence_lines(metadata, estimate)
     country = (
         merged.groupby("district")[
             [
@@ -2851,6 +3685,10 @@ def tab_district_profile(
                     f"Model {metadata['best_model']}."
                 ),
             ),
+            ("gap", ""),
+            ("section", "Limits"),
+            ("body", profile_facts["confidence_title"]),
+            ("body", profile_facts["validation_body"]),
         ]
     )
     profile_user = signed_in_user()
@@ -2921,6 +3759,21 @@ def tab_district_profile(
         """,
         unsafe_allow_html=True,
     )
+    with st.container(border=True):
+        render_model_evidence(metadata, estimate)
+        render_expert_review(
+            crop_id=crop_id,
+            crop_name=crop_name,
+            district=district,
+            predicted_yield=float(estimate),
+            usual_yield=float(usual),
+            details={
+                "year": year,
+                "zone": zone_name,
+                "worst_shock": worst["Shock"],
+            },
+            surface="profile",
+        )
 
     with st.container(border=True):
         st.markdown(
@@ -3616,6 +4469,43 @@ def _stamp(value: str) -> str:
     return value[:16].replace("T", " ") + " UTC"
 
 
+def _short_date(value: str) -> str:
+    raw = (value or "")[:10]
+    try:
+        year, month, day = raw.split("-")
+        months = (
+            "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+        )
+        return f"{int(day)} {months[int(month) - 1]} {year}"
+    except (TypeError, ValueError, IndexError):
+        return _stamp(value)
+
+
+def _case_steps_html(status: str) -> str:
+    labels = ("Sent", "Assigned", "In review", "Replied")
+    order = ("submitted", "assigned", "in_review", "reviewed")
+    if status == "reviewed":
+        current = 4
+    elif status in order:
+        current = order.index(status)
+    else:
+        current = -1
+    items = []
+    for index, label in enumerate(labels):
+        if current < 0:
+            kind = ""
+        elif index < current:
+            kind = "done"
+        elif index == current:
+            kind = "now"
+        else:
+            kind = ""
+        items.append(
+            f'<li class="{kind}"><i></i><span>{label}</span></li>'
+        )
+    return f'<ol class="case-steps">{"".join(items)}</ol>'
+
+
 def _flash() -> None:
     message = st.session_state.pop("account_flash", None)
     if message:
@@ -3754,13 +4644,44 @@ def render_account_sidebar(user) -> None:
         """,
         unsafe_allow_html=True,
     )
-    if user["role"] == "admin":
+    if user["role"] == "admin" or (
+        user["role"] == "agronomist" and user["expert_verified"]
+    ):
         st.sidebar.button(
-            "Operations console",
+            (
+                "Operations console"
+                if user["role"] == "admin"
+                else "Agronomist review desk"
+            ),
             width="stretch",
             key="goto_console",
             on_click=_enter_console,
         )
+    if user["role"] == "admin":
+        st.sidebar.button(
+            "Agronomist applications",
+            width="stretch",
+            key="goto_applications",
+            on_click=open_page,
+            args=("Agronomist applications",),
+        )
+    application = latest_agronomist_application(user["id"])
+    if user["role"] == "user":
+        pending = application and application["status"] == "pending"
+        st.sidebar.button(
+            "Agronomist application" if pending else "Apply as agronomist",
+            width="stretch",
+            key="goto_agronomist_apply",
+            on_click=open_page,
+            args=("Apply as agronomist",),
+        )
+    st.sidebar.button(
+        "Account",
+        width="stretch",
+        key="goto_account",
+        on_click=open_page,
+        args=("Account",),
+    )
     st.sidebar.button(
         "My work",
         width="stretch",
@@ -3829,14 +4750,23 @@ def render_nav(pages: list[str]) -> str:
 
 
 def render_sign_in(district_names: list[str]) -> None:
-    """Sign in first. Create account opens underneath, like a login page."""
+    """Optional account page. The planner stays available without signing in."""
 
     st.markdown('<div class="auth-stack"></div>', unsafe_allow_html=True)
     page_header(
         "Account",
-        "Sign in to save the districts you cover, visit notes, and "
-        "scenario runs. Maps and estimates stay open without an account.",
+        "Maps and estimates stay on the planner without an account. "
+        "Sign in to save notes and to send a case to an agronomist.",
     )
+    if st.button(
+        "Back to the planner",
+        type="primary",
+        width="stretch",
+        key="leave_sign_in",
+    ):
+        st.session_state.page = "Dashboard"
+        st.session_state.admin_console = False
+        st.rerun()
     _flash()
     if st.session_state.get("auth_panel") == "create":
         _render_create_account(district_names)
@@ -3875,11 +4805,11 @@ def _render_sign_in_panel() -> None:
             st.error(error)
         else:
             st.session_state.user_id = user["id"]
-            if user["role"] == "admin":
-                st.session_state.admin_console = True
-            else:
-                st.session_state.admin_console = False
-                st.session_state.pending_page = "My work"
+            st.session_state.admin_console = False
+            st.session_state.page = "Dashboard"
+            st.session_state.account_flash = (
+                "Signed in. The planner is open."
+            )
             st.rerun()
 
     st.markdown(
@@ -3959,16 +4889,11 @@ def _render_create_account(district_names: list[str]) -> None:
             else:
                 st.session_state.user_id = created["id"]
                 st.session_state.auth_panel = "sign_in"
-                if created["role"] == "admin":
-                    st.session_state.admin_console = True
-                    st.session_state.account_flash = (
-                        "Account created. You are signed in."
-                    )
-                else:
-                    st.session_state.pending_page = "My work"
-                    st.session_state.account_flash = (
-                        "Account created. You are signed in."
-                    )
+                st.session_state.admin_console = False
+                st.session_state.page = "Dashboard"
+                st.session_state.account_flash = (
+                    "Account created. The planner is open."
+                )
                 st.rerun()
     if st.button(
         "Already have an account? Sign in",
@@ -3979,82 +4904,392 @@ def _render_create_account(district_names: list[str]) -> None:
         st.rerun()
 
 
-def render_my_work(user: dict, district_names: list[str]) -> None:
-    """Districts, notes, and saved runs for the signed-in person."""
+def render_agronomist_apply_page(user: dict) -> None:
+    """Identity application, separate from saved runs and review cases."""
 
     page_header(
-        "My work",
-        "Districts you cover, visit notes, and saved scenario runs. "
-        "The yield estimate itself stays the same for every account.",
+        "Apply as agronomist",
+        "Send one identity card. An admin checks it before this account "
+        "can review cases. Notes and expert reviews stay under My work.",
+    )
+    _flash()
+    render_agronomist_application_panel(user)
+
+
+def render_agronomist_application_panel(user: dict) -> None:
+    """Signed-in users submit identity details; an admin decides later."""
+
+    if user["role"] == "admin":
+        return
+    application = latest_agronomist_application(user["id"])
+    verified = user["role"] == "agronomist" and user["expert_verified"]
+    if verified:
+        st.write(
+            "This account can review yield, pest, pesticide, and fertilizer cases."
+        )
+        if user["qualifications"]:
+            st.caption(user["qualifications"])
+        return
+    if application and application["status"] == "pending":
+        st.write(
+            "Your application is with an admin. You will keep this user "
+            "account until they approve or reject it."
+        )
+        st.caption(
+            f"{application['document_type_label']} · "
+            f"submitted {_stamp(application['submitted_at'])}"
+        )
+        return
+    if application and application["status"] == "rejected":
+        st.warning(
+            "The last application was not approved. "
+            f"{application['review_note']}".strip()
+        )
+
+    st.caption(
+        "Upload one identity card. An admin checks it before you can review cases."
+    )
+    with st.form(f"agronomist_apply_{user['id']}"):
+        document = st.file_uploader(
+            "Identity card",
+            type=["jpg", "jpeg", "png", "pdf"],
+            key=f"agronomist_card_{user['id']}",
+        )
+        name_col, org_col = st.columns(2)
+        with name_col:
+            full_name = st.text_input(
+                "Name on the document",
+                value=user["name"],
+            )
+        with org_col:
+            organization = st.text_input(
+                "Workplace or university",
+                value=user["organization"],
+            )
+        qualifications = st.text_input(
+            "Qualification or posting",
+            placeholder="BSc Agriculture, DAE extension officer",
+        )
+        type_col, number_col = st.columns(2)
+        with type_col:
+            document_type = st.selectbox(
+                "Document type",
+                list(AGRONOMIST_DOCUMENT_TYPES),
+                format_func=lambda value: AGRONOMIST_DOCUMENT_TYPES[value],
+            )
+        with number_col:
+            document_number = st.text_input("ID number")
+        notes = st.text_input(
+            "Note to admin",
+            placeholder="Optional",
+        )
+        submitted = st.form_submit_button(
+            "Submit",
+            type="primary",
+        )
+    if submitted:
+        payload = document.getvalue() if document is not None else b""
+        filename = document.name if document is not None else ""
+        _, error = submit_agronomist_application(
+            user["id"],
+            full_name,
+            organization,
+            qualifications,
+            document_type,
+            document_number,
+            filename,
+            payload,
+            notes,
+        )
+        if error:
+            st.error(error)
+        else:
+            st.session_state.account_flash = (
+                "Application submitted. An admin will review it."
+            )
+            st.rerun()
+
+
+def render_agronomist_applications_page(actor: dict) -> None:
+    """Admin page to accept or deny agronomist identity applications."""
+
+    page_header(
+        "Agronomist applications",
+        "Accept a checked identity card, or deny it with a short note.",
+    )
+    _flash()
+    applications, error = list_agronomist_applications(actor["id"])
+    if error:
+        st.error(error)
+        return
+    pending = [item for item in applications if item["status"] == "pending"]
+    approved = [item for item in applications if item["status"] == "approved"]
+    denied = [item for item in applications if item["status"] == "rejected"]
+    st.markdown(
+        f"""
+        <div class="kpi-row">
+            <div><span>Waiting</span><strong>{len(pending)}</strong></div>
+            <div><span>Accepted</span><strong>{len(approved)}</strong></div>
+            <div><span>Denied</span><strong>{len(denied)}</strong></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if not pending:
+        st.caption("No applications waiting.")
+    for item in pending:
+        with st.container(border=True):
+            st.markdown(f"**{item['full_name']}** · {item['email']}")
+            st.caption(
+                f"{item['organization']} · {_stamp(item['submitted_at'])}"
+            )
+            st.write(item["qualifications"])
+            st.caption(
+                f"{item['document_type_label']}: {item['document_number']}"
+            )
+            if item["notes"]:
+                st.write(item["notes"])
+            payload, filename, file_error = application_document_bytes(
+                actor["id"],
+                item["id"],
+            )
+            if file_error:
+                st.caption(file_error)
+            elif payload:
+                suffix = Path(filename).suffix.lower()
+                if suffix in {".jpg", ".jpeg", ".png"}:
+                    st.image(payload, caption=filename, width=280)
+                st.download_button(
+                    "Download card",
+                    data=payload,
+                    file_name=filename or f"application_{item['id']}",
+                    key=f"download_agronomist_{item['id']}",
+                )
+            note = st.text_input(
+                "Note",
+                key=f"agronomist_note_{item['id']}",
+                placeholder="Required to deny",
+            )
+            accept, deny = st.columns(2)
+            if accept.button(
+                "Accept",
+                key=f"accept_agronomist_{item['id']}",
+                type="primary",
+            ):
+                error = review_agronomist_application(
+                    actor["id"],
+                    item["id"],
+                    "approved",
+                    note,
+                )
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state.account_flash = (
+                        f"{item['account_name']} is now a verified agronomist."
+                    )
+                    st.rerun()
+            if deny.button(
+                "Deny",
+                key=f"deny_agronomist_{item['id']}",
+            ):
+                error = review_agronomist_application(
+                    actor["id"],
+                    item["id"],
+                    "rejected",
+                    note,
+                )
+                if error:
+                    st.error(error)
+                else:
+                    st.session_state.account_flash = "Application denied."
+                    st.rerun()
+    decided = approved + denied
+    decided.sort(key=lambda item: item["reviewed_at"] or "", reverse=True)
+    if decided:
+        st.subheader("Decisions")
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "When": _stamp(
+                            item["reviewed_at"] or item["submitted_at"]
+                        ),
+                        "Name": item["account_name"],
+                        "Document": item["document_type_label"],
+                        "Decision": (
+                            "Accepted"
+                            if item["status"] == "approved"
+                            else "Denied"
+                        ),
+                        "Note": item["review_note"],
+                    }
+                    for item in decided[:12]
+                ]
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+def _render_review_cases(user: dict) -> None:
+    """Show the signed-in person's expert-review inbox as status cards."""
+
+    st.subheader("Expert review")
+    labels = {
+        "submitted": "Waiting",
+        "assigned": "Assigned",
+        "in_review": "In review",
+        "reviewed": "Replied",
+        "closed": "Closed",
+    }
+    cases = list_user_review_requests(user["id"])
+    if not cases:
+        st.markdown(
+            '<div class="case-empty">No cases yet. Send one from a '
+            "district estimate.</div>",
+            unsafe_allow_html=True,
+        )
+        return
+    used = {}
+    choice_labels = []
+    for item in cases:
+        label = f"{item['district']} · {item['crop_name']}"
+        if label in used:
+            label = f"{label} · {_short_date(item['updated_at'])}"
+        used[label] = True
+        choice_labels.append(label)
+    selected = st.selectbox(
+        "Case",
+        choice_labels,
+        index=None,
+        placeholder="Select a case",
+        key=f"review_case_wait_{user['id']}",
+    )
+    if not selected:
+        return
+    case = cases[choice_labels.index(selected)]
+    status = case["status"]
+    topic = REVIEW_CATEGORIES.get(case["category"], case["category"])
+    reviewer = case["assigned_name"] or "Unassigned"
+    question = html.escape(str(case["question"] or ""))
+    reply = html.escape(str(case["response"] or ""))
+    reply_html = (
+        f'<div class="case-reply"><span>Agronomist reply</span>'
+        f"<p>{reply}</p></div>"
+        if reply
+        else ""
+    )
+    st.markdown(
+        f"""
+        <article class="case-card">
+            <div class="case-top">
+                <div>
+                    <em>Case {case['id']}</em>
+                    <strong>{html.escape(case['crop_name'])} · {html.escape(case['district'])}</strong>
+                </div>
+                <span class="case-status {html.escape(status)}">
+                    {html.escape(labels.get(status, status))}
+                </span>
+            </div>
+            {_case_steps_html(status)}
+            <div class="case-facts">
+                <div><span>Reviewer</span><strong>{html.escape(reviewer)}</strong></div>
+                <div><span>Topic</span><strong>{html.escape(topic)}</strong></div>
+                <div><span>Updated</span><strong>{html.escape(_short_date(case['updated_at']))}</strong></div>
+            </div>
+            {reply_html}
+            <div class="case-block">
+                <span>Your question</span>
+                <p>{question}</p>
+            </div>
+        </article>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_account_page(user: dict, district_names: list[str]) -> None:
+    """Name, organization, districts, and password. Separate from My work."""
+
+    page_header(
+        "Account",
+        "Update your name, organization, and the districts you cover, "
+        "or set a new password. Saved runs and review cases stay under My work.",
     )
     _flash()
     st.caption(
         f"{user['email']} · {ROLE_LABELS.get(user['role'], user['role'])}"
     )
+    st.subheader("Profile")
+    profile_nonce = int(st.session_state.get("profile_nonce", 0))
+    with st.form(f"profile_form_{user['id']}_{profile_nonce}"):
+        name = st.text_input("Name", value=user["name"])
+        organization = st.text_input(
+            "Organization",
+            value=user["organization"],
+        )
+        saved_districts = [
+            district
+            for district in user["districts"]
+            if district in district_names
+        ]
+        districts = st.multiselect(
+            "Districts you cover",
+            district_names,
+            default=saved_districts,
+        )
+        profile_submitted = st.form_submit_button(
+            "Save profile",
+            type="primary",
+        )
+    if profile_submitted:
+        error = update_profile(
+            user["id"],
+            name,
+            organization,
+            districts,
+            district_names,
+        )
+        if error:
+            st.error(error)
+        else:
+            st.session_state.profile_nonce = profile_nonce + 1
+            st.session_state.account_flash = "Profile saved."
+            st.rerun()
 
-    if st.button("Edit profile", key="open_profile_form"):
-        st.session_state.show_profile_form = True
-    if st.session_state.get("show_profile_form"):
-        st.caption("Update your name, organization, or the districts you cover.")
-        profile_nonce = int(st.session_state.get("profile_nonce", 0))
-        with st.form(f"profile_form_{user['id']}_{profile_nonce}"):
-            name = st.text_input("Name", value=user["name"])
-            organization = st.text_input(
-                "Organization",
-                value=user["organization"],
-            )
-            saved_districts = [
-                district
-                for district in user["districts"]
-                if district in district_names
-            ]
-            districts = st.multiselect(
-                "Districts you cover",
-                district_names,
-                default=saved_districts,
-            )
-            profile_submitted = st.form_submit_button(
-                "Save profile",
-                type="primary",
-            )
-        if profile_submitted:
-            error = update_profile(
-                user["id"],
-                name,
-                organization,
-                districts,
-                district_names,
-            )
+    st.subheader("Password")
+    st.caption("Use this only when you want a new password.")
+    password_nonce = int(st.session_state.get("password_form", 0))
+    with st.form(f"password_form_{user['id']}_{password_nonce}"):
+        current = st.text_input("Current password", type="password")
+        new_password = st.text_input("New password", type="password")
+        confirm = st.text_input("Confirm new password", type="password")
+        password_submitted = st.form_submit_button("Update password")
+    if password_submitted:
+        if new_password != confirm:
+            st.error("Type the same password in both boxes.")
+        else:
+            error = change_password(user["id"], current, new_password)
             if error:
                 st.error(error)
             else:
-                st.session_state.profile_nonce = profile_nonce + 1
-                st.session_state.show_profile_form = False
-                st.session_state.account_flash = "Profile saved."
+                st.session_state.password_form = password_nonce + 1
+                st.session_state.account_flash = "Password updated."
                 st.rerun()
 
-    if st.button("Change password", key="open_password_form"):
-        st.session_state.show_password_form = True
-    if st.session_state.get("show_password_form"):
-        st.caption("Use this only when you want a new password.")
-        password_nonce = int(st.session_state.get("password_form", 0))
-        with st.form(f"password_form_{user['id']}_{password_nonce}"):
-            current = st.text_input("Current password", type="password")
-            new_password = st.text_input("New password", type="password")
-            confirm = st.text_input("Confirm new password", type="password")
-            password_submitted = st.form_submit_button("Update password")
-        if password_submitted:
-            if new_password != confirm:
-                st.error("Type the same password in both boxes.")
-            else:
-                error = change_password(user["id"], current, new_password)
-                if error:
-                    st.error(error)
-                else:
-                    st.session_state.password_form = password_nonce + 1
-                    st.session_state.show_password_form = False
-                    st.session_state.account_flash = "Password updated."
-                    st.rerun()
+
+def render_my_work(user: dict) -> None:
+    """Notes, saved runs, and expert review cases for the signed-in person."""
+
+    page_header(
+        "My work",
+        "Saved scenario runs, expert review cases, and visit notes. "
+        "The yield estimate itself stays the same for every account.",
+    )
+    _flash()
+
+    _render_review_cases(user)
 
     st.subheader("Saved runs")
     runs = list_runs(user["id"])
@@ -4138,12 +5373,11 @@ def render_my_work(user: dict, district_names: list[str]) -> None:
 
 
 def render_users(actor: dict, district_names: list[str]) -> None:
-    """Admin screen for roles, districts, and turning an account off."""
+    """Admin screen for access, agronomist credentials, and account status."""
 
     page_header(
         "Users",
-        "Set an account as a user or an admin, assign districts, "
-        "or turn an account off.",
+        "Manage account access.",
     )
     _flash()
     people = list_users()
@@ -4158,6 +5392,13 @@ def render_users(actor: dict, district_names: list[str]) -> None:
                         person["role"],
                     ),
                     "Organization": person["organization"],
+                    "Qualifications": person["qualifications"],
+                    "Verified agronomist": (
+                        "Yes"
+                        if person["role"] == "agronomist"
+                        and person["expert_verified"]
+                        else "No"
+                    ),
                     "Districts": len(person["districts"]),
                     "Active": "Yes" if person["active"] else "No",
                     "Created": _stamp(person["created_at"]),
@@ -4179,7 +5420,7 @@ def render_users(actor: dict, district_names: list[str]) -> None:
     target = people[labels.index(choice)]
     nonce = int(st.session_state.get(f"admin_form_{target['id']}", 0))
     with st.form(f"admin_edit_{target['id']}_{nonce}"):
-        role_options = ["user", "admin"]
+        role_options = ["user", "agronomist", "admin"]
         role = st.selectbox(
             "Role",
             role_options,
@@ -4189,6 +5430,20 @@ def render_users(actor: dict, district_names: list[str]) -> None:
                 else 0
             ),
             format_func=lambda item: ROLE_LABELS[item],
+        )
+        qualifications = st.text_input(
+            "Professional qualification / registration checked",
+            value=target["qualifications"],
+            max_chars=300,
+            help=(
+                "Record the credential and issuing body. Verify it outside "
+                "the app before granting review access."
+            ),
+        )
+        expert_verified = st.checkbox(
+            "I verified this person's qualification against an authoritative source",
+            value=bool(target["expert_verified"]),
+            disabled=role != "agronomist",
         )
         active = st.checkbox(
             "Account is active",
@@ -4225,6 +5480,8 @@ def render_users(actor: dict, district_names: list[str]) -> None:
             districts,
             district_names,
             new_password,
+            qualifications,
+            expert_verified,
         )
         if error:
             st.error(error)
@@ -4242,11 +5499,14 @@ def main():
     ensure_default_admin()
     inject_styles()
     user = signed_in_user()
-    if (
-        user is not None
-        and user["role"] == "admin"
-        and st.session_state.get("admin_console", True)
-    ):
+    can_open_console = user is not None and (
+        user["role"] == "admin"
+        or (
+            user["role"] == "agronomist"
+            and user["expert_verified"]
+        )
+    )
+    if can_open_console and st.session_state.get("admin_console", False):
         from src.app.admin_console import render_admin_app
 
         render_admin_app(user)
@@ -4319,7 +5579,13 @@ def main():
     if user is None:
         pages.append("Sign in")
     else:
+        pages.append("Account")
         pages.append("My work")
+        if user["role"] == "user":
+            pages.append("Apply as agronomist")
+        if user["role"] == "admin":
+            pages.append("Agronomist applications")
+            pages.append("Users")
 
     pending = st.session_state.pop("pending_page", None)
     if pending in pages:
@@ -4341,24 +5607,18 @@ def main():
         f"""
         <div class="stat-grid">
             <div><span>Model</span><strong>{metadata['best_model']}</strong></div>
-            <div><span>Rows</span><strong>{metadata['n_samples']}</strong></div>
             <div><span>Years</span><strong>{year_start}–{year_end}</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-    st.sidebar.markdown("---")
-    st.sidebar.caption(
-        "Data: NASA POWER climate · ISRIC soil · "
-        "MODIS greenness · BBS agricultural statistics"
-    )
-
     if page == "Dashboard":
         render_dashboard(
             merged,
             districts,
             name,
+            crop_id,
+            metadata,
         )
 
     elif page == "Attention List":
@@ -4395,6 +5655,7 @@ def main():
             features,
             crop_id,
             name,
+            metadata,
         )
 
     elif page == "What-If Analysis":
@@ -4407,6 +5668,7 @@ def main():
             crop_id,
             name,
             spec["season"],
+            metadata,
         )
 
     elif page == "Crop Suitability":
@@ -4423,15 +5685,30 @@ def main():
     elif page == "Sign in":
         render_sign_in(district_names)
 
+    elif page == "Account" and user is not None:
+        render_account_page(user, district_names)
+
     elif page == "My work" and user is not None:
-        render_my_work(user, district_names)
+        render_my_work(user)
+
+    elif page == "Apply as agronomist" and user is not None and user["role"] == "user":
+        render_agronomist_apply_page(user)
+
+    elif page == "Agronomist applications" and user is not None and user["role"] == "admin":
+        render_agronomist_applications_page(user)
 
     elif page == "Users" and user is not None and user["role"] == "admin":
         render_users(user, district_names)
 
     else:
-        render_sign_in(district_names)
+        render_dashboard(
+            merged,
+            districts,
+            name,
+            crop_id,
+            metadata,
+        )
 
 
 if __name__ == "__main__":
-    main()  
+    main()

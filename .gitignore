@@ -2,6 +2,7 @@
 .streamlit/secrets.toml
 .mysql/
 data/accounts.sqlite
+data/agronomist_applications/
 __pycache__/
 *.pyc
 .venv/
