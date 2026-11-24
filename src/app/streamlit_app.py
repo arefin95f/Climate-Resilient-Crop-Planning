@@ -476,8 +476,9 @@ footer,
 [data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stToolbar"] {
     display: flex !important;
     position: fixed !important;
-    top: calc(12px + env(safe-area-inset-top)) !important;
-    left: 14px !important;
+    top: calc(14px + env(safe-area-inset-top)) !important;
+    left: max(16px, calc((100vw - 1120px) / 2 + 16px)) !important;
+    right: auto !important;
     z-index: 6000 !important;
     width: 42px !important;
     height: 42px !important;
@@ -513,10 +514,10 @@ footer,
 }
 [data-testid="stSidebarHeader"] {
     display: flex !important;
-    position: fixed !important;
-    top: calc(10px + env(safe-area-inset-top)) !important;
-    left: calc(268px - 54px) !important;
-    right: auto !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 10px !important;
+    left: auto !important;
     width: 42px !important;
     height: 42px !important;
     min-width: 42px !important;
@@ -1071,8 +1072,9 @@ hr {
     [data-testid="stAppViewContainer"] {
         overflow-x: hidden !important;
     }
-    [data-testid="stSidebarHeader"] {
-        left: calc(min(86vw, 300px) - 54px) !important;
+    [data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stToolbar"] {
+        top: calc(12px + env(safe-area-inset-top)) !important;
+        left: 14px !important;
     }
     [data-testid="stSidebar"] {
         position: fixed !important;
