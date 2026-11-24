@@ -473,6 +473,7 @@ footer,
     box-shadow: none;
     font-weight: 600;
 }
+[data-testid="stToolbar"]:has([data-testid="stExpandSidebarButton"][aria-expanded="false"]),
 [data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stToolbar"] {
     display: flex !important;
     position: fixed !important;
@@ -1082,6 +1083,9 @@ hr {
     [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stToolbar"] {
         display: none !important;
     }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][data-collapsed="false"]) [data-testid="stToolbar"] {
+        display: none !important;
+    }
     [data-testid="stSidebar"] {
         position: fixed !important;
         top: 0 !important;
@@ -1111,10 +1115,25 @@ hr {
         overflow: hidden !important;
         box-shadow: 0 16px 40px rgba(20, 38, 28, 0.22);
     }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][data-collapsed="false"]) [data-testid="stSidebar"] {
+        transform: translateX(0) !important;
+        width: min(86vw, 300px) !important;
+        min-width: 0 !important;
+        max-width: min(86vw, 300px) !important;
+        flex: 0 0 auto !important;
+        overflow: hidden !important;
+        box-shadow: 0 16px 40px rgba(20, 38, 28, 0.22);
+    }
     [data-testid="stSidebar"][aria-expanded="false"] {
         transform: translateX(-105%) !important;
     }
     [data-testid="stSidebar"][aria-expanded="true"] {
+        transform: translateX(0) !important;
+    }
+    [data-testid="stSidebar"][data-collapsed="true"] {
+        transform: translateX(-105%) !important;
+    }
+    [data-testid="stSidebar"][data-collapsed="false"] {
         transform: translateX(0) !important;
     }
     [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] {
