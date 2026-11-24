@@ -512,6 +512,9 @@ footer,
     box-shadow: none !important;
     color: #0E6B45 !important;
 }
+[data-testid="stToolbar"] div:has(> [data-testid="stExpandSidebarButton"]) {
+    margin-left: 0 !important;
+}
 [data-testid="stSidebarHeader"] {
     display: flex !important;
     position: absolute !important;
@@ -1076,6 +1079,9 @@ hr {
         top: calc(12px + env(safe-area-inset-top)) !important;
         left: 14px !important;
     }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stToolbar"] {
+        display: none !important;
+    }
     [data-testid="stSidebar"] {
         position: fixed !important;
         top: 0 !important;
@@ -1096,7 +1102,7 @@ hr {
         z-index: 2000 !important;
         visibility: visible !important;
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebarCollapseButton"]) [data-testid="stSidebar"] {
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebar"] {
         transform: translateX(0) !important;
         width: min(86vw, 300px) !important;
         min-width: 0 !important;
@@ -1104,6 +1110,15 @@ hr {
         flex: 0 0 auto !important;
         overflow: hidden !important;
         box-shadow: 0 16px 40px rgba(20, 38, 28, 0.22);
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        transform: translateX(-105%) !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        transform: translateX(0) !important;
+    }
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] {
+        display: flex !important;
     }
     [data-testid="stSidebarContent"] {
         padding-top: 0.85rem !important;
