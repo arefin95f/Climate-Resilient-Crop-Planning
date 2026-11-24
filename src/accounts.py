@@ -464,6 +464,7 @@ def _ensure_builtin(
                     role, districts, active, created_at
                 )
                 VALUES (?, ?, ?, ?, ?, ?, '[]', 1, ?)
+                ON CONFLICT(email) DO NOTHING
                 """,
                 (name, login, digest, salt, organization, role, _now()),
             )
