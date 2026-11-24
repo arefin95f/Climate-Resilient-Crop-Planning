@@ -221,13 +221,17 @@ html, body, [class*="css"] {
     font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24 !important;
 }
 [data-testid="stHeader"] {
-    height: 3.25rem;
-    min-height: 3.25rem;
-    background: #F4F6F3;
-    border-bottom: 1px solid #E4EBE5;
+    height: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    overflow: visible !important;
     left: 0 !important;
     right: auto !important;
     width: 100% !important;
+}
+[data-testid="stSidebarHeader"] {
+    display: none !important;
 }
 [data-testid="stToolbar"],
 #MainMenu,
@@ -372,7 +376,7 @@ footer,
     width: 100%;
 }
 .brand {
-    padding: 0 2px 8px;
+    padding: 2px 48px 8px 2px;
     margin: 0 0 4px 0;
     border-bottom: 1px solid #E4EBE5;
 }
@@ -464,13 +468,60 @@ footer,
     box-shadow: none;
     font-weight: 600;
 }
-@media (min-width: 1201px) and (pointer: fine) {
-    [data-testid="stSidebarHeader"],
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapseButton"] {
-        display: none !important;
-    }
+.nav-switch,
+[data-testid="stElementContainer"]:has(.nav-switch),
+[data-testid="stMarkdownContainer"]:has(.nav-switch) {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    pointer-events: none !important;
+}
+.nav-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+.nav-toggle-btn {
+    position: fixed;
+    z-index: 6000;
+    top: calc(12px + env(safe-area-inset-top));
+    left: calc(268px - 54px);
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #B7CDBB;
+    border-radius: 10px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(20, 38, 28, 0.16);
+    cursor: pointer;
+    pointer-events: auto;
+}
+.nav-toggle-btn span {
+    position: absolute;
+    left: 12px;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: #0E6B45;
+    transition: transform 160ms ease, opacity 160ms ease;
+}
+.nav-toggle-btn span:nth-child(1) { top: 14px; }
+.nav-toggle-btn span:nth-child(2) { top: 20px; }
+.nav-toggle-btn span:nth-child(3) { top: 26px; }
+.nav-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1900;
+    background: rgba(20, 38, 28, 0.38);
+    opacity: 0;
+    pointer-events: none;
 }
 .page-head {
     padding: 4px 0 8px 0;
@@ -745,8 +796,31 @@ footer,
     font-size: 0.78rem;
 }
 @media (max-width: 700px) {
-    .case-facts { grid-template-columns: 1fr; }
-    .case-steps li span { display: none; }
+    .case-facts, .evidence-hero, .skill-grid {
+        grid-template-columns: 1fr;
+    }
+    .case-top {
+        flex-wrap: wrap;
+    }
+    .case-steps {
+        gap: 4px;
+    }
+    .case-steps li {
+        font-size: 0.6rem;
+        letter-spacing: 0.02em;
+    }
+    .kpi-row strong, .evidence-hero strong {
+        font-size: 1.25rem;
+    }
+    [data-testid="stColumn"] {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    .block-container {
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+    }
 }
 .range-card {
     padding: 12px 14px 10px;
@@ -939,6 +1013,38 @@ hr {
     border-top: 1px solid #E4EBE5;
     margin: 0.6rem 0;
 }
+@media (min-width: 1201px) and (pointer: fine) {
+    .nav-toggle-btn span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+    }
+    .nav-toggle-btn span:nth-child(2) {
+        opacity: 0;
+    }
+    .nav-toggle-btn span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn {
+        left: 14px;
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span {
+        transform: none;
+        opacity: 1;
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) [data-testid="stSidebar"] {
+        flex: 0 0 0 !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        border-right-width: 0 !important;
+        overflow: hidden !important;
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) > div:has([data-testid="stMain"]) {
+        max-width: 100% !important;
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .block-container {
+        padding-top: 4rem;
+    }
+}
 @media (max-width: 1200px), (pointer: coarse) {
     .page-head h1 {
         font-size: 1.6rem !important;
@@ -960,181 +1066,53 @@ hr {
     [data-testid="stAppViewContainer"] {
         overflow-x: hidden !important;
     }
-    [data-testid="stHeader"] {
-        height: 0 !important;
-        min-height: 0 !important;
-        background: transparent !important;
-        border: 0 !important;
-        overflow: visible !important;
-        display: block !important;
+    .nav-toggle-btn {
+        left: 14px;
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] {
-        display: flex !important;
-        position: fixed !important;
-        top: calc(14px + env(safe-area-inset-top)) !important;
-        left: 14px !important;
-        z-index: 5000 !important;
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
-        min-height: 36px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: #FFFFFF !important;
-        border: 1px solid #D5E0D8 !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-        pointer-events: auto !important;
-        overflow: hidden !important;
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn {
+        left: calc(min(86vw, 300px) - 54px);
+        background: #FFFFFF;
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stAppDeployButton"],
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stToolbarActions"],
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] [data-testid="stMainMenu"] {
-        display: none !important;
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stToolbar"] div {
-        margin: 0 !important;
-        padding: 0 !important;
-        width: auto !important;
-        min-width: 0 !important;
-        height: auto !important;
-        flex: 0 0 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(2) {
+        opacity: 0;
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="false"]) button[data-testid="stExpandSidebarButton"] {
-        position: absolute !important;
-        inset: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
     }
-    [data-testid="stAppViewContainer"]:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stToolbar"] {
-        display: none !important;
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-scrim {
+        opacity: 1;
+        pointer-events: auto;
     }
     [data-testid="stSidebar"] {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         margin-left: 0 !important;
-        width: min(86vw, 280px) !important;
+        width: min(86vw, 300px) !important;
         min-width: 0 !important;
-        max-width: min(86vw, 280px) !important;
+        max-width: min(86vw, 300px) !important;
         height: 100vh !important;
         height: 100dvh !important;
         max-height: 100vh !important;
         max-height: 100dvh !important;
         flex: 0 0 auto !important;
-        overflow: visible !important;
-        transform: none !important;
-        box-shadow: 0 12px 28px rgba(20, 38, 28, 0.18);
-        transition: left 180ms ease, visibility 180ms ease;
-        z-index: 1000 !important;
+        overflow: hidden !important;
+        transform: translateX(-105%) !important;
+        box-shadow: none !important;
+        transition: transform 180ms ease;
+        z-index: 2000 !important;
+        visibility: visible !important;
+    }
+    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) [data-testid="stSidebar"] {
+        transform: translateX(0) !important;
+        box-shadow: 0 16px 40px rgba(20, 38, 28, 0.22);
     }
     [data-testid="stSidebarContent"] {
         padding-top: 0.85rem !important;
         overflow-x: hidden !important;
-    }
-    [data-testid="stSidebar"][aria-expanded="false"] {
-        left: -110% !important;
-        transform: none !important;
-        visibility: hidden !important;
-    }
-    [data-testid="stSidebar"][aria-expanded="true"] {
-        left: 0 !important;
-        transform: none !important;
-        visibility: visible !important;
-    }
-    [data-testid="stSidebarHeader"],
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        position: fixed !important;
-        top: calc(14px + env(safe-area-inset-top)) !important;
-        z-index: 5000 !important;
-        width: 32px !important;
-        height: 32px !important;
-        min-width: 32px !important;
-        min-height: 32px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        transform: none !important;
-        overflow: visible !important;
-    }
-    [data-testid="stSidebar"][aria-expanded="true"] [data-testid="stSidebarHeader"] {
-        left: calc(min(86vw, 280px) - 44px) !important;
-    }
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"] {
-        left: 14px !important;
-        background: #FFFFFF !important;
-        border: 1px solid #D5E0D8 !important;
-        border-radius: 8px !important;
-    }
-    [data-testid="stSidebarCollapseButton"],
-    [data-testid="stExpandSidebarButton"] {
-        display: flex !important;
-        position: relative !important;
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
-        min-height: 36px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        pointer-events: none !important;
-    }
-    [data-testid="stSidebarCollapseButton"] button,
-    [data-testid="stExpandSidebarButton"] button,
-    button[data-testid="stExpandSidebarButton"] {
-        display: flex !important;
-        position: relative !important;
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
-        min-height: 36px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        pointer-events: auto !important;
-        cursor: pointer !important;
-    }
-    [data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"],
-    [data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
-        position: static !important;
-        width: auto !important;
-        height: auto !important;
-        overflow: visible !important;
-        clip: auto !important;
-        pointer-events: none !important;
-        font-size: 22px !important;
-        color: #163126 !important;
-    }
-    [data-testid="stAppDeployButton"],
-    [data-testid="stMainMenuButton"] {
-        display: none !important;
     }
     [data-testid="stAppViewContainer"] > div:has([data-testid="stMain"]) {
         flex: 1 1 100% !important;
@@ -1164,9 +1142,9 @@ hr {
         gap: 0.75rem !important;
     }
     [data-testid="stColumn"] {
-        flex: 1 1 100% !important;
-        width: 100% !important;
-        min-width: 0 !important;
+        flex: 1 1 220px !important;
+        width: auto !important;
+        min-width: min(100%, 180px) !important;
         max-width: 100% !important;
     }
     [data-testid="stMetric"] {
@@ -1219,6 +1197,23 @@ hr {
 
 def inject_styles() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
+
+
+def render_nav_toggle() -> None:
+    """Menu button that opens and closes the sidebar on every screen size."""
+
+    st.markdown(
+        """
+        <div class="nav-switch">
+            <input id="nav-toggle" class="nav-toggle" type="checkbox" tabindex="-1">
+            <label class="nav-scrim" for="nav-toggle" aria-label="Close menu"></label>
+            <label class="nav-toggle-btn" for="nav-toggle" aria-label="Open or close menu">
+                <span></span><span></span><span></span>
+            </label>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def page_header(title: str, subtitle: str) -> None:
@@ -5498,6 +5493,7 @@ def main():
 
     ensure_default_admin()
     inject_styles()
+    render_nav_toggle()
     user = signed_in_user()
     can_open_console = user is not None and (
         user["role"] == "admin"
