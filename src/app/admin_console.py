@@ -68,9 +68,6 @@ ADMIN_CSS = """
 [data-testid="stAppViewContainer"]:has(.admin-shell) {
     background: #E7ECF1;
 }
-[data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stHeader"] {
-    display: none !important;
-}
 [data-testid="stAppViewContainer"]:has(.admin-shell) .block-container {
     max-width: 1240px;
     padding-top: 1.2rem;
@@ -78,6 +75,13 @@ ADMIN_CSS = """
 [data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebar"] {
     background: #12181F;
     border-right: 1px solid #243140;
+}
+[data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarHeader"] {
+    background: #1A2430 !important;
+    border-color: #3A4E62 !important;
+}
+[data-testid="stAppViewContainer"]:has(.admin-shell) [data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"] {
+    color: #E0B15A !important;
 }
 [data-testid="stAppViewContainer"]:has(.admin-shell) .brand {
     border-bottom-color: #2A3A4A;
@@ -269,7 +273,7 @@ ADMIN_CSS = """
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
-@media (max-width: 1200px), (pointer: coarse) {
+@media (max-width: 1200px) {
     [data-testid="stAppViewContainer"]:has(.admin-shell) {
         overflow-x: hidden !important;
     }

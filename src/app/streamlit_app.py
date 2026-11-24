@@ -229,15 +229,20 @@ html, body, [class*="css"] {
     left: 0 !important;
     right: auto !important;
     width: 100% !important;
+    z-index: 1000002 !important;
 }
-[data-testid="stSidebarHeader"] {
-    display: none !important;
-}
-[data-testid="stToolbar"],
 #MainMenu,
 footer,
 [data-testid="stDecoration"] {
+    display: none !important;
+}
+[data-testid="stToolbar"] {
     display: none;
+}
+[data-testid="stToolbar"] [data-testid="stMainMenu"],
+[data-testid="stToolbar"] [data-testid="stToolbarActions"],
+[data-testid="stToolbar"] [data-testid="stAppDeployButton"] {
+    display: none !important;
 }
 [data-testid="stFileUploaderDropzoneInstructions"] span:last-child,
 [data-testid="stFileUploaderFileLimit"] {
@@ -468,60 +473,92 @@ footer,
     box-shadow: none;
     font-weight: 600;
 }
-.nav-switch,
-[data-testid="stElementContainer"]:has(.nav-switch),
-[data-testid="stMarkdownContainer"]:has(.nav-switch) {
-    position: absolute !important;
-    width: 0 !important;
-    height: 0 !important;
-    min-height: 0 !important;
+[data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stToolbar"] {
+    display: flex !important;
+    position: fixed !important;
+    top: calc(12px + env(safe-area-inset-top)) !important;
+    left: 14px !important;
+    z-index: 6000 !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
     margin: 0 !important;
     padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #FFFFFF !important;
+    border: 1px solid #0E6B45 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 3px rgba(20, 38, 28, 0.16) !important;
     overflow: visible !important;
-    pointer-events: none !important;
 }
-.nav-toggle {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
+[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapseButton"] button,
+[data-testid="stSidebarHeader"] button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #0E6B45 !important;
 }
-.nav-toggle-btn {
-    position: fixed;
-    z-index: 6000;
-    top: calc(12px + env(safe-area-inset-top));
-    left: calc(268px - 54px);
-    width: 42px;
-    height: 42px;
-    margin: 0;
-    padding: 0;
-    border: 1px solid #B7CDBB;
-    border-radius: 10px;
-    background: #FFFFFF;
-    box-shadow: 0 1px 3px rgba(20, 38, 28, 0.16);
-    cursor: pointer;
-    pointer-events: auto;
+[data-testid="stSidebarHeader"] {
+    display: flex !important;
+    position: fixed !important;
+    top: calc(10px + env(safe-area-inset-top)) !important;
+    left: calc(268px - 54px) !important;
+    right: auto !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 6000 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #FFFFFF !important;
+    border: 1px solid #0E6B45 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 3px rgba(20, 38, 28, 0.12) !important;
+    overflow: visible !important;
 }
-.nav-toggle-btn span {
-    position: absolute;
-    left: 12px;
-    width: 18px;
-    height: 2px;
-    border-radius: 2px;
-    background: #0E6B45;
-    transition: transform 160ms ease, opacity 160ms ease;
+[data-testid="stSidebarHeader"]:not(:has([data-testid="stSidebarCollapseButton"])) {
+    display: none !important;
 }
-.nav-toggle-btn span:nth-child(1) { top: 14px; }
-.nav-toggle-btn span:nth-child(2) { top: 20px; }
-.nav-toggle-btn span:nth-child(3) { top: 26px; }
-.nav-scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 1900;
-    background: rgba(20, 38, 28, 0.38);
-    opacity: 0;
-    pointer-events: none;
+[data-testid="stSidebarHeader"] [data-testid="stLogoSpacer"] {
+    display: none !important;
+}
+[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"],
+[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"] {
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #0E6B45 !important;
+    font-size: 22px !important;
+}
+[data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebar"] {
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    border-right-width: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+[data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) > div:has([data-testid="stMain"]) {
+    max-width: 100% !important;
+}
+[data-testid="stAppViewContainer"]:has([data-testid="stExpandSidebarButton"]) .block-container {
+    padding-top: 3.6rem;
 }
 .page-head {
     padding: 4px 0 8px 0;
@@ -1013,44 +1050,12 @@ hr {
     border-top: 1px solid #E4EBE5;
     margin: 0.6rem 0;
 }
-@media (min-width: 1201px) and (pointer: fine) {
-    .nav-toggle-btn span:nth-child(1) {
-        transform: translateY(6px) rotate(45deg);
-    }
-    .nav-toggle-btn span:nth-child(2) {
-        opacity: 0;
-    }
-    .nav-toggle-btn span:nth-child(3) {
-        transform: translateY(-6px) rotate(-45deg);
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn {
-        left: 14px;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span {
-        transform: none;
-        opacity: 1;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) [data-testid="stSidebar"] {
-        flex: 0 0 0 !important;
-        width: 0 !important;
-        min-width: 0 !important;
-        max-width: 0 !important;
-        border-right-width: 0 !important;
-        overflow: hidden !important;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) > div:has([data-testid="stMain"]) {
-        max-width: 100% !important;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .block-container {
-        padding-top: 4rem;
-    }
-}
-@media (max-width: 1200px), (pointer: coarse) {
+@media (max-width: 1200px) {
     .page-head h1 {
         font-size: 1.6rem !important;
     }
 }
-@media (max-width: 1200px), (pointer: coarse) {
+@media (max-width: 1200px) {
     html, body {
         overflow-x: hidden !important;
     }
@@ -1066,25 +1071,8 @@ hr {
     [data-testid="stAppViewContainer"] {
         overflow-x: hidden !important;
     }
-    .nav-toggle-btn {
-        left: 14px;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn {
-        left: calc(min(86vw, 300px) - 54px);
-        background: #FFFFFF;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(1) {
-        transform: translateY(6px) rotate(45deg);
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(2) {
-        opacity: 0;
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-toggle-btn span:nth-child(3) {
-        transform: translateY(-6px) rotate(-45deg);
-    }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) .nav-scrim {
-        opacity: 1;
-        pointer-events: auto;
+    [data-testid="stSidebarHeader"] {
+        left: calc(min(86vw, 300px) - 54px) !important;
     }
     [data-testid="stSidebar"] {
         position: fixed !important;
@@ -1106,8 +1094,13 @@ hr {
         z-index: 2000 !important;
         visibility: visible !important;
     }
-    [data-testid="stAppViewContainer"]:has(#nav-toggle:checked) [data-testid="stSidebar"] {
+    [data-testid="stAppViewContainer"]:has([data-testid="stSidebarCollapseButton"]) [data-testid="stSidebar"] {
         transform: translateX(0) !important;
+        width: min(86vw, 300px) !important;
+        min-width: 0 !important;
+        max-width: min(86vw, 300px) !important;
+        flex: 0 0 auto !important;
+        overflow: hidden !important;
         box-shadow: 0 16px 40px rgba(20, 38, 28, 0.22);
     }
     [data-testid="stSidebarContent"] {
@@ -1197,23 +1190,6 @@ hr {
 
 def inject_styles() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
-
-
-def render_nav_toggle() -> None:
-    """Menu button that opens and closes the sidebar on every screen size."""
-
-    st.markdown(
-        """
-        <div class="nav-switch">
-            <input id="nav-toggle" class="nav-toggle" type="checkbox" tabindex="-1">
-            <label class="nav-scrim" for="nav-toggle" aria-label="Close menu"></label>
-            <label class="nav-toggle-btn" for="nav-toggle" aria-label="Open or close menu">
-                <span></span><span></span><span></span>
-            </label>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def page_header(title: str, subtitle: str) -> None:
@@ -5493,7 +5469,6 @@ def main():
 
     ensure_default_admin()
     inject_styles()
-    render_nav_toggle()
     user = signed_in_user()
     can_open_console = user is not None and (
         user["role"] == "admin"
